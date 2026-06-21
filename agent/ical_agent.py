@@ -3,7 +3,7 @@ import requests
 from datetime import date
 from icalendar import Calendar
 from app.database import get_client
-from app.whatsapp import notificar_nova_reserva
+from app.telegram import notificar_nova_reserva
 
 FEEDS = {
     "Booking": os.environ.get("BOOKING_ICAL", ""),
