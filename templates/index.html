@@ -123,12 +123,16 @@ tr:hover td { background: #f7fafc; }
 .cal-barra-row td.fora { background: #fafafa !important; }
 .cal-barra { position: absolute; top: 4px; bottom: 4px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; font-size: 0.65rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .cal-barra:hover { opacity: 0.85; z-index: 10; }
-.cal-barra.booking  { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
-.cal-barra.airbnb   { background: linear-gradient(90deg,#c53030,#e53e3e); }
-.cal-barra.direta   { background: linear-gradient(90deg,#276749,#38a169); }
-.cal-barra.vrbo     { background: linear-gradient(90deg,#553c9a,#805ad5); }
-.cal-barra.bloqueio { background: linear-gradient(90deg,#2d3748,#4a5568); }
-.cal-barra.noshow   { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+/* cores por status/financeiro */
+.cal-barra.checkin   { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
+.cal-barra.checkout  { background: linear-gradient(90deg,#4a5568,#718096); }
+.cal-barra.confirmada{ background: linear-gradient(90deg,#276749,#38a169); }
+.cal-barra.noshow    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+.cal-barra.sempag    { background: linear-gradient(90deg,#9b2c2c,#c53030); }
+.cal-barra.parcial   { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+.cal-barra.bloqueio  { background: linear-gradient(90deg,#1a202c,#2d3748); }
+.cal-barra.paga      { background: linear-gradient(90deg,#276749,#48bb78); }
+.cal-barra.naopaga   { background: linear-gradient(90deg,#c05621,#ed8936); }
 </style>
 </head>
 <body>
@@ -208,11 +212,13 @@ tr:hover td { background: #f7fafc; }
       </div>
       <div style="padding:16px">
         <div class="cal-legenda">
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#3182ce"></div>Booking</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#e53e3e"></div>Airbnb</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Direta</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#805ad5"></div>Vrbo</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#4a5568"></div>Bloqueio</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#3182ce"></div>Check in</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#718096"></div>Check out</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Confirmada (passado)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#48bb78"></div>Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#ed8936"></div>Não Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#2d3748"></div>Bloqueado</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#c53030"></div>Sem pagamento</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f0f4f8;border:1px solid #e2e8f0"></div>Livre</div>
         </div>
         <div class="cal-wrap">
@@ -271,7 +277,7 @@ tr:hover td { background: #f7fafc; }
       <select id="f-status">
         <option>Reserva Confirmada</option><option>Check in</option><option>Check out</option>
         <option>Reserva sem Pag.</option><option>Reserva com Pag. Parcial</option>
-        <option>Bloqueado</option><option>No Show</option>
+        <option>No Show</option><option>Bloqueado</option>
       </select>
     </div>
     <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
@@ -333,6 +339,28 @@ function showTab(tab, btn) {
   if(tab==='calendario') renderCalendario();
 }
 
+function getCorBarra(r) {
+  const status = r.status || '';
+  // bloqueado sempre é bloqueado
+  if(r.canal === 'Bloqueio' || status === 'Bloqueado') return 'bloqueio';
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const ci = new Date(r.check_in + 'T00:00:00');
+  const co = new Date(r.check_out + 'T00:00:00');
+
+  // passado ou presente → usa status da reserva
+  if(co <= hoje || ci <= hoje) {
+    if(status === 'Check in')  return 'checkin';
+    if(status === 'Check out') return 'checkout';
+    if(status === 'No Show')   return 'noshow';
+    if(status.includes('sem Pag')) return 'sempag';
+    if(status.includes('Parcial')) return 'parcial';
+    return 'confirmada';
+  }
+  // futuro → usa status financeiro
+  return r.status_financeiro === 'Paga' ? 'paga' : 'naopaga';
+}
+
 function renderCalendario() {
   const ano = parseInt(document.getElementById('cal-ano').value);
   const diasMes = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -387,29 +415,33 @@ function renderCalendario() {
       const co = new Date(r.check_out + 'T12:00:00');
 
       // clamp ao mês
-      const inicio = ci < inicioMes ? inicioMes : ci;
-      const fim    = co > fimMes    ? new Date(`${ano}-${mesStr}-${String(totalDias).padStart(2,'0')}T23:59:00`) : co;
+      const ciClamp = ci < inicioMes ? inicioMes : ci;
+      const coClamp = co > fimMes    ? new Date(`${ano}-${mesStr}-${String(totalDias).padStart(2,'0')}T12:00:00`) : co;
 
-      const diaInicio = inicio.getDate(); // 1-based
-      const diasDuracao = Math.round((fim - inicio) / 86400000);
-      if(diasDuracao <= 0) return;
+      const diaInicio = ciClamp.getDate(); // 1-based (célula âncora)
+      const diaFim    = coClamp.getDate(); // 1-based (célula fim)
 
-      const canal = (r.canal||'direta').toLowerCase().replace(' ','');
-      const nome_h = r.hospede || r.canal || '';
-      const label = nome_h || canal;
+      // Barra começa no MEIO do dia de check-in e termina no MEIO do dia de check-out:
+      //   left  = CELL/2  (metade da célula âncora)
+      //   width = (diaFim - diaInicio) * CELL
+      const left    = CELL / 2;
+      const largura = Math.max((diaFim - diaInicio) * CELL, 6);
 
-      // injeta a barra na célula do diaInicio (índice td = diaInicio, já que td[0]=mes-label)
+      const classCor = getCorBarra(r);
+      const label = r.hospede || (r.canal==='Bloqueio' ? 'Bloqueado' : r.canal) || '';
+
       const tds = trFundo.querySelectorAll('td');
-      const tdAlvo = tds[diaInicio]; // mes-label ocupa tds[0], dias começam em tds[1]
-      if(!tdAlvo) return;
+      // tds[0] = mes-label, tds[1] = dia 1, tds[N] = dia N
+      const tdAncora = tds[diaInicio];
+      if(!tdAncora) return;
 
+      tdAncora.style.overflow = 'visible';
       const barra = document.createElement('div');
-      barra.className = `cal-barra ${canal}`;
-      const largura = diasDuracao * CELL - 4;
-      barra.style.cssText = `left:2px; right:auto; width:${largura}px;`;
-      barra.title = `${label} | ${fmt(r.check_in)} → ${fmt(r.check_out)} | ${r.diarias} diárias${r.valor_total?' | R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
+      barra.className = `cal-barra ${classCor}`;
+      barra.style.cssText = `left:${left}px; width:${largura}px;`;
+      barra.title = `${label} | ${fmt(r.check_in)} → ${fmt(r.check_out)} | ${r.diarias||'?'} diárias${r.valor_total?' | R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
       barra.textContent = label;
-      tdAlvo.appendChild(barra);
+      tdAncora.appendChild(barra);
     });
   });
 
