@@ -97,11 +97,14 @@ table.res tr:hover td { background: #f7fafc; }
 /* Barras */
 .cal-barra { position: absolute; top: 12px; bottom: 0; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; font-size: 0; font-weight: 700; color: white; white-space: nowrap; cursor: default; z-index: 5; box-shadow: 0 1px 3px rgba(0,0,0,.18); overflow: visible; }
 .cal-barra:hover { opacity: 0.88; z-index: 20; }
-.cal-barra:hover .cal-tip { display: block; }
+.cal-barra:hover .cal-tip, .cal-barra.pinned .cal-tip { display: block; }
 .cal-barra-label { font-size: 0.62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; pointer-events: none; }
 .cal-tip { display: none; position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 8px; padding: 7px 11px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 100; pointer-events: none; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.cal-barra.pinned .cal-tip { pointer-events: auto; }
 .cal-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
 .cal-tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a202c; }
+.cal-tip-editar { display: block; margin-top: 6px; padding: 3px 10px; background: #3182ce; border-radius: 5px; text-align: center; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: white; }
+.cal-tip-editar:hover { background: #2b6cb0; }
 
 /* Cores barras */
 .cal-barra.checkin    { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
@@ -849,7 +852,13 @@ function renderCalendario() {
       span.textContent=label;
       const tip=document.createElement('div');
       tip.className='cal-tip';
-      tip.innerHTML=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
+      tip.innerHTML=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
+      barra.addEventListener('click', e => {
+        e.stopPropagation();
+        const wasPinned = barra.classList.contains('pinned');
+        document.querySelectorAll('.cal-barra.pinned').forEach(b=>b.classList.remove('pinned'));
+        if(!wasPinned) barra.classList.add('pinned');
+      });
       barra.appendChild(span);
       barra.appendChild(tip);
       tdAncora.appendChild(barra);
@@ -997,6 +1006,10 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{
 });
 
 iniciarSessao();
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.cal-barra.pinned').forEach(b=>b.classList.remove('pinned'));
+});
 </script>
 </body>
 </html>
