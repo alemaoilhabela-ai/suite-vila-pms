@@ -215,7 +215,6 @@ tr:hover td { background: #f7fafc; }
         <h2>Calendário de Ocupação</h2>
         <div class="card-actions">
           <select id="cal-ano" onchange="sincronizarAno('cal-ano'); carregarReservas(true)"></select>
-          <button class="btn btn-danger" onclick="marcarTodosPago()" style="font-size:0.75rem">✅ Marcar todos Pago</button>
           <select id="cal-mes" onchange="renderCalendario()">
             <option value="0">Todos os meses</option>
             <option value="1">Janeiro</option><option value="2">Fevereiro</option>
@@ -354,13 +353,6 @@ function sincronizarAno(origem) {
   });
 }
 
-async function marcarTodosPago() {
-  if(!confirm('Marcar TODAS as reservas como Paga?')) return;
-  const r = await fetch('/api/admin/marcar-todos-pago', {method:'POST'});
-  const d = await r.json();
-  alert(d.msg);
-  carregarReservas(true);
-}
 
 async function salvarCorte() {
   const val = document.getElementById('data-corte').value;
