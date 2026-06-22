@@ -13,12 +13,8 @@ def create_app():
     app.register_blueprint(bp)
 
     scheduler = BackgroundScheduler(timezone="America/Sao_Paulo")
-    scheduler.add_job(
-        func=_run_agent,
-        trigger="interval",
-        hours=1,
-        id="ical_check"
-    )
+    scheduler.add_job(func=_run_email_monitor, trigger="interval", minutes=5, id="email_check")
+    scheduler.add_job(func=_run_agent, trigger="interval", hours=6, id="ical_check")
     scheduler.start()
 
     return app
@@ -28,4 +24,11 @@ def _run_agent():
         from agent.ical_agent import verificar_feeds
         verificar_feeds()
     except Exception as e:
-        print(f"[Scheduler] Erro: {e}")
+        print(f"[Scheduler] Erro iCal: {e}")
+
+def _run_email_monitor():
+    try:
+        from agent.email_monitor import verificar_emails_novos
+        verificar_emails_novos()
+    except Exception as e:
+        print(f"[Scheduler] Erro email: {e}")
