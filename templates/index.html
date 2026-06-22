@@ -227,19 +227,6 @@ table.res tr:hover td { background: #f7fafc; }
         </div>
       </div>
       <div style="padding:14px">
-        <div class="cal-legenda">
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#3182ce"></div>Check in</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#cbd5e0"></div>Check out</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Paga (futuro)</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#e53e3e"></div>Não Paga (futuro)</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#2d3748"></div>Bloqueado</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#c05621"></div>Manutenção</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f0f4f8;border:1px solid #e2e8f0"></div>Livre</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f7f3e3;border:1px solid #e2e8f0"></div>FDS</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#fff5f5;border:1px solid #e2e8f0"></div>Feriado</div>
-          <div class="cal-legenda-item" style="border: 2px solid #38a169; border-radius:3px; padding:0 4px">Paga (passado)</div>
-          <div class="cal-legenda-item" style="border: 2px solid #e53e3e; border-radius:3px; padding:0 4px">Não Paga (passado)</div>
-        </div>
         <!-- toggle de visão -->
         <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
           <button id="btn-view-mensal" class="btn btn-primary" onclick="setCalView('mensal')">📅 Mensal</button>
@@ -252,6 +239,19 @@ table.res tr:hover td { background: #f7fafc; }
           </span>
         </div>
         <div class="cal-wrap"><table class="cal-table" id="cal-table"></table></div>
+        <div class="cal-legenda" style="margin-top:12px">
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#3182ce"></div>Check in</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#cbd5e0"></div>Check out</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#e53e3e"></div>Não Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#2d3748"></div>Bloqueado</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#c05621"></div>Manutenção</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f0f4f8;border:1px solid #e2e8f0"></div>Livre</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f7f3e3;border:1px solid #e2e8f0"></div>FDS</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#fff5f5;border:1px solid #e2e8f0"></div>Feriado</div>
+          <div class="cal-legenda-item" style="border: 2px solid #38a169; border-radius:3px; padding:0 4px">Paga (passado)</div>
+          <div class="cal-legenda-item" style="border: 2px solid #e53e3e; border-radius:3px; padding:0 4px">Não Paga (passado)</div>
+        </div>
       </div>
     </div>
   </div>
@@ -847,6 +847,11 @@ function renderJanela() {
   tbody.appendChild(tr);
   table.appendChild(tbody);
 
+  // tfoot — repete datas embaixo
+  const tfoot = document.createElement('tfoot');
+  tfoot.innerHTML = thHTML;
+  table.appendChild(tfoot);
+
   // desenha barras
   const dStr = d => d.toISOString().slice(0,10);
   const inicioStr = dStr(janelaInicio);
@@ -1016,6 +1021,11 @@ function renderCalendario() {
   });
 
   table.appendChild(tbody);
+
+  // tfoot — repete numeração de dias embaixo
+  const tfoot = document.createElement('tfoot');
+  tfoot.innerHTML = thHTML;
+  table.appendChild(tfoot);
 }
 
 // ─── Relatório ─────────────────────────────────────────────
