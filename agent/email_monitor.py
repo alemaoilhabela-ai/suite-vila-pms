@@ -1,6 +1,6 @@
 import os
 import json
-import base64
+import re
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
@@ -8,6 +8,10 @@ from agent.ical_agent import verificar_feeds
 from app.telegram import enviar_mensagem
 
 REMETENTES = ["booking.com", "airbnb.com", "airbnb.com.br"]
+
+def extrair_id_reserva(assunto):
+    m = re.search(r'\b(\d{8,12})\b', assunto)
+    return m.group(1) if m else None
 
 def get_gmail_service():
     creds_data = json.loads(os.environ["GMAIL_TOKEN_JSON"])
@@ -42,7 +46,13 @@ def verificar_emails_novos():
             assunto = headers.get("Subject", "")
 
             if any(r in remetente for r in REMETENTES):
-                print(f"[Email] Novo email de reserva: {assunto}")
+                id_reserva = extrair_id_reserva(assunto)
+                print(f"[Email] Novo email: {assunto} | ID extraído: {id_reserva}")
+                # Salva o ID da reserva na reserva correspondente se encontrar
+                if id_reserva:
+                    from app.database import get_client
+                    db = get_client()
+                    db.table("reservas").update({"numero_reserva": id_reserva}).eq("numero_reserva", "").is_("numero_reserva", "null").execute()
                 service.users().messages().modify(
                     userId="me", id=msg["id"],
                     body={"removeLabelIds": ["UNREAD"]}

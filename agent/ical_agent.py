@@ -36,8 +36,19 @@ def parse_ical(url):
         })
     return eventos
 
+def get_data_corte(db):
+    try:
+        res = db.table("configuracoes").select("valor").eq("chave", "data_corte_vendas").execute()
+        if res.data:
+            from datetime import datetime
+            return datetime.strptime(res.data[0]["valor"], "%Y-%m-%d").date()
+    except:
+        pass
+    return None
+
 def verificar_feeds():
     db = get_client()
+    data_corte = get_data_corte(db)
     for canal, url in FEEDS.items():
         if not url:
             continue
@@ -48,6 +59,8 @@ def verificar_feeds():
             continue
 
         for ev in eventos:
+            if data_corte and ev["check_in"] >= data_corte:
+                continue
             uid = ev["uid"]
             # verifica por uid OU por check_in+check_out+canal (evita duplicar reservas do Excel)
             por_uid = db.table("reservas").select("id").eq("uid", uid).execute()

@@ -13,8 +13,22 @@ def index():
 def listar_reservas():
     db = get_client()
     ano = request.args.get("ano", date.today().year)
-    res = db.table("reservas").select("*").gte("check_in", f"{ano}-01-01").lte("check_in", f"{ano}-12-31").order("check_in").execute()
+    res = db.table("reservas").select("*").gte("check_in", f"{ano}-01-01").lte("check_in", f"{ano}-12-31").order("check_in", desc=True).execute()
     return jsonify(res.data)
+
+@bp.get("/api/config")
+def get_config():
+    db = get_client()
+    res = db.table("configuracoes").select("*").execute()
+    return jsonify({r["chave"]: r["valor"] for r in res.data})
+
+@bp.post("/api/config")
+def set_config():
+    db = get_client()
+    data = request.json
+    for chave, valor in data.items():
+        db.table("configuracoes").upsert({"chave": chave, "valor": valor}).execute()
+    return jsonify({"ok": True})
 
 @bp.get("/api/reservas/pendentes")
 def pendentes():
