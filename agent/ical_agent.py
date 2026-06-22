@@ -49,8 +49,13 @@ def verificar_feeds():
 
         for ev in eventos:
             uid = ev["uid"]
-            existente = db.table("reservas").select("id").eq("uid", uid).execute()
-            if existente.data:
+            # verifica por uid OU por check_in+check_out+canal (evita duplicar reservas do Excel)
+            por_uid = db.table("reservas").select("id").eq("uid", uid).execute()
+            por_datas = db.table("reservas").select("id").eq("check_in", str(ev["check_in"])).eq("check_out", str(ev["check_out"])).eq("canal", canal).execute()
+            if por_uid.data or por_datas.data:
+                # garante que o uid fica salvo para referência futura
+                if por_datas.data and not por_uid.data:
+                    db.table("reservas").update({"uid": uid}).eq("id", por_datas.data[0]["id"]).execute()
                 continue
 
             db.table("reservas").insert({
