@@ -240,6 +240,17 @@ table.res tr:hover td { background: #f7fafc; }
           <div class="cal-legenda-item" style="border: 2px solid #38a169; border-radius:3px; padding:0 4px">Paga (passado)</div>
           <div class="cal-legenda-item" style="border: 2px solid #e53e3e; border-radius:3px; padding:0 4px">Não Paga (passado)</div>
         </div>
+        <!-- toggle de visão -->
+        <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
+          <button id="btn-view-mensal" class="btn btn-primary" onclick="setCalView('mensal')">📅 Mensal</button>
+          <button id="btn-view-janela" class="btn btn-gray"    onclick="setCalView('janela')">📊 Janela (31 dias)</button>
+          <!-- controles da janela -->
+          <span id="janela-nav" style="display:none;align-items:center;gap:6px;margin-left:8px">
+            <button class="btn btn-gray" onclick="moverJanela(-31)">◀</button>
+            <span id="janela-label" style="font-size:0.8rem;font-weight:700;color:#4a5568;min-width:160px;text-align:center"></span>
+            <button class="btn btn-gray" onclick="moverJanela(+31)">▶</button>
+          </span>
+        </div>
         <div class="cal-wrap"><table class="cal-table" id="cal-table"></table></div>
       </div>
     </div>
@@ -452,6 +463,8 @@ let editandoId     = null;
 let editandoUserId = null;
 let _usersData     = [];
 let meUser         = null;
+let calView        = 'mensal';  // 'mensal' | 'janela'
+let janelaInicio   = new Date(); // data inicial da janela
 
 document.getElementById('hoje').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
@@ -756,7 +769,144 @@ function getCorBarra(r) {
   return {fill:fillClass,bord:bordClass};
 }
 
+function setCalView(view) {
+  calView = view;
+  document.getElementById('btn-view-mensal').className = 'btn ' + (view==='mensal'?'btn-primary':'btn-gray');
+  document.getElementById('btn-view-janela').className = 'btn ' + (view==='janela'?'btn-primary':'btn-gray');
+  document.getElementById('janela-nav').style.display  = view==='janela' ? 'flex' : 'none';
+  // oculta filtros mensais na janela
+  document.getElementById('cal-mes').style.display    = view==='mensal' ? '' : 'none';
+  document.getElementById('cal-status').style.display = view==='mensal' ? '' : 'none';
+  if(view==='janela') { janelaInicio = new Date(); janelaInicio.setHours(0,0,0,0); }
+  renderCalendario();
+}
+
+function moverJanela(dias) {
+  janelaInicio = new Date(janelaInicio.getTime() + dias*86400000);
+  renderCalendario();
+}
+
+function renderJanela() {
+  const CELL = 32, DIAS = 31;
+  const table = document.getElementById('cal-table');
+  table.innerHTML = '';
+  table.style.width = `calc(80px + ${DIAS}*${CELL}px)`;
+  table.style.minWidth = table.style.width;
+
+  // atualiza label
+  const fim = new Date(janelaInicio.getTime() + (DIAS-1)*86400000);
+  const fmt2 = d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+  document.getElementById('janela-label').textContent = `${fmt2(janelaInicio)} → ${fmt2(fim)}`;
+
+  // thead
+  const thead = document.createElement('thead');
+  let thHTML = '<tr><th class="mes-col" style="width:80px"></th>';
+  for(let i=0;i<DIAS;i++){
+    const d = new Date(janelaInicio.getTime()+i*86400000);
+    const dow = DIAS_SM[d.getDay()];
+    const isWE = d.getDay()===0||d.getDay()===6;
+    thHTML += `<th style="${isWE?'color:#d69e2e':''}">${d.getDate()}<br><span style="font-size:0.5rem;font-weight:400">${dow}</span></th>`;
+  }
+  thHTML += '</tr>';
+  thead.innerHTML = thHTML;
+  table.appendChild(thead);
+
+  // tbody — uma única linha
+  const tbody = document.createElement('tbody');
+  const tr = document.createElement('tr');
+
+  // label da linha
+  const tdLabel = document.createElement('td');
+  tdLabel.className = 'mes-label';
+  tdLabel.style.width = '80px';
+  tdLabel.textContent = 'Suite Vila';
+  tr.appendChild(tdLabel);
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const feriados = getFeriados(janelaInicio.getFullYear()).concat(getFeriados(fim.getFullYear()));
+  const ferSet = new Set(feriados.map(f=>f.toDateString()));
+
+  for(let i=0;i<DIAS;i++){
+    const d = new Date(janelaInicio.getTime()+i*86400000);
+    const isWE = d.getDay()===0||d.getDay()===6;
+    const isFer = ferSet.has(d.toDateString());
+    const isHoje = d.toDateString()===hoje.toDateString();
+    let cls = 'cal-td';
+    if(isFer) cls+=' feriado'; else if(isWE) cls+=' weekend';
+    if(isHoje) cls+=' hoje-col';
+    const td = document.createElement('td');
+    td.className = cls;
+    td.style.cssText = 'position:relative;width:32px;padding:0;overflow:visible;height:36px;border-left:1px solid #edf2f7;';
+    // label dow
+    const dowSpan = document.createElement('span');
+    dowSpan.className = 'cal-dow' + (isFer?' dow-feriado':isWE?' dow-weekend':'');
+    dowSpan.textContent = DIAS_SM[d.getDay()];
+    td.appendChild(dowSpan);
+    tr.appendChild(td);
+  }
+  tbody.appendChild(tr);
+  table.appendChild(tbody);
+
+  // desenha barras
+  const dStr = d => d.toISOString().slice(0,10);
+  const inicioStr = dStr(janelaInicio);
+  const fimStr    = dStr(fim);
+
+  reservasCache.forEach(r => {
+    if(!r.check_in || !r.check_out) return;
+    if(r.check_out <= inicioStr || r.check_in > fimStr) return;
+
+    const ci = new Date(r.check_in+'T12:00:00');
+    const co = new Date(r.check_out+'T12:00:00');
+    const clampedStart = ci < janelaInicio;
+    const clampedEnd   = co > new Date(fim.getTime()+86400000);
+
+    // índice do dia âncora (0-based dentro da janela)
+    const idxInicio = clampedStart ? 0 : Math.round((ci-janelaInicio)/86400000);
+    const idxFim    = clampedEnd   ? DIAS-1 : Math.round((co-janelaInicio)/86400000);
+
+    const absLeft  = idxInicio*CELL + (clampedStart?0:CELL/2);
+    const absRight = idxFim   *CELL + (clampedEnd  ?CELL:CELL/2);
+    const largura  = Math.max(absRight-absLeft, 6);
+    const left     = clampedStart ? 0 : CELL/2;
+
+    const hoje2 = new Date(); hoje2.setHours(0,0,0,0);
+    const {fill,bord} = getCorBarra(r);
+    const label = r.hospede || r.canal;
+    const esc = s => s ? s.replace(/</g,'&lt;') : '';
+    const fmt = s => s ? new Date(s+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) : '';
+
+    const tdAncora = tr.children[idxInicio+1]; // +1 para pular mes-label
+    if(!tdAncora) return;
+    tdAncora.style.overflow = 'visible';
+
+    const barra = document.createElement('div');
+    barra.className = `cal-barra ${fill}${bord?' '+bord:''}`;
+    barra.style.cssText = `left:${left}px;width:${largura}px;`;
+
+    const span = document.createElement('span');
+    span.className = 'cal-barra-label';
+    span.textContent = label;
+
+    const tip = document.createElement('div');
+    tip.className = 'cal-tip';
+    tip.innerHTML = `<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
+
+    barra.addEventListener('click', e => {
+      e.stopPropagation();
+      const wasPinned = barra.classList.contains('pinned');
+      document.querySelectorAll('.cal-barra.pinned').forEach(b=>b.classList.remove('pinned'));
+      if(!wasPinned) barra.classList.add('pinned');
+    });
+
+    barra.appendChild(span);
+    barra.appendChild(tip);
+    tdAncora.appendChild(barra);
+  });
+}
+
 function renderCalendario() {
+  if(calView === 'janela') { renderJanela(); return; }
   const ano       = parseInt(document.getElementById('cal-ano').value);
   const mesFiltro = parseInt(document.getElementById('cal-mes').value||'0');
   const stFiltro  = document.getElementById('cal-status').value||'';
