@@ -28,6 +28,24 @@ def set_config():
     data = request.json
     for chave, valor in data.items():
         db.table("configuracoes").upsert({"chave": chave, "valor": valor}).execute()
+    # quando data_corte muda: cria/atualiza bloqueio de vendas
+    if "data_corte_vendas" in data:
+        from datetime import datetime, timedelta
+        inicio = data["data_corte_vendas"]
+        fim_dt = datetime.strptime(inicio, "%Y-%m-%d") + timedelta(days=730)
+        fim = fim_dt.strftime("%Y-%m-%d")
+        # remove bloqueios anteriores de venda (uid especial)
+        db.table("reservas").delete().eq("uid", "bloqueio-vendas").execute()
+        db.table("reservas").insert({
+            "uid": "bloqueio-vendas",
+            "canal": "Bloqueio",
+            "status": "Bloqueado",
+            "check_in": inicio,
+            "check_out": fim,
+            "hospede": "Bloqueado — Fora de venda",
+            "aguardando_detalhes": False,
+            "status_financeiro": "Paga",
+        }).execute()
     return jsonify({"ok": True})
 
 @bp.get("/api/reservas/pendentes")

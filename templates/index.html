@@ -134,10 +134,10 @@ tr:hover td { background: #f7fafc; }
 .cal-barra.paga       { background: linear-gradient(90deg,#276749,#38a169); }
 .cal-barra.naopaga    { background: linear-gradient(90deg,#9b2c2c,#e53e3e); }
 .cal-barra.parcial    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
-/* bordas financeiro para passado */
-.cal-barra.bord-paga    { outline: 3px solid #38a169; outline-offset: -2px; }
-.cal-barra.bord-naopaga { outline: 3px solid #e53e3e; outline-offset: -2px; }
-.cal-barra.bord-parcial { outline: 3px solid #d69e2e; outline-offset: -2px; }
+/* bordas financeiro para passado (item 4: 50% mais finas) */
+.cal-barra.bord-paga    { outline: 2px solid #38a169; outline-offset: -1px; }
+.cal-barra.bord-naopaga { outline: 2px solid #e53e3e; outline-offset: -1px; }
+.cal-barra.bord-parcial { outline: 2px solid #d69e2e; outline-offset: -1px; }
 </style>
 </head>
 <body>
@@ -169,8 +169,8 @@ tr:hover td { background: #f7fafc; }
   </div>
 
   <div class="tabs">
-    <button class="tab" onclick="showTab('reservas',this)">Reservas</button>
     <button class="tab active" onclick="showTab('calendario',this)">Calendário</button>
+    <button class="tab" onclick="showTab('reservas',this)">Reservas</button>
     <button class="tab" onclick="showTab('relatorio',this)">Relatório Mensal</button>
   </div>
 
@@ -290,10 +290,10 @@ tr:hover td { background: #f7fafc; }
     </div>
     <div class="form-row">
       <div class="form-group"><label>Canal</label>
-        <select id="f-canal"><option>Booking</option><option>Airbnb</option><option>Direta</option><option>Vrbo</option><option>Bloqueio</option><option>No Show</option></select>
+        <select id="f-canal" onchange="onCanalChange(this.value)"><option>Booking</option><option>Airbnb</option><option>Direta</option><option>Vrbo</option><option>Bloqueio</option><option>No Show</option></select>
       </div>
       <div class="form-group"><label>Status Financeiro</label>
-        <select id="f-fin"><option>Não Paga</option><option>Paga</option></select>
+        <select id="f-fin"><option>Não Paga</option><option>Paga</option><option>Parcial</option></select>
       </div>
     </div>
     <div class="form-group"><label>Status</label>
@@ -303,6 +303,7 @@ tr:hover td { background: #f7fafc; }
         <option>No Show</option><option>Bloqueado</option>
       </select>
     </div>
+    <div class="form-group" id="f-senha-wrap" style="display:none"><label>🔒 Senha para Bloqueio</label><input type="password" id="f-senha" placeholder="Digite a senha"></div>
     <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
@@ -348,8 +349,22 @@ fetch('/api/config').then(r=>r.json()).then(cfg => {
 async function salvarCorte() {
   const val = document.getElementById('data-corte').value;
   if(!val) return;
+  const senha = prompt('🔒 Senha para alterar o bloqueio de vendas:');
+  const cfg = await (await fetch('/api/config')).json();
+  if(senha !== (cfg.senha_bloqueio || 'vila2024')) { alert('Senha incorreta!'); return; }
   await fetch('/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({data_corte_vendas: val})});
-  alert('Data de corte salva!');
+  alert('Data de corte salva! Bloqueio criado até ' + new Date(new Date(val).getTime()+730*86400000).toLocaleDateString('pt-BR'));
+  carregarReservas(true);
+}
+
+function onCanalChange(val) {
+  const isBloq = val === 'Bloqueio';
+  document.getElementById('f-senha-wrap').style.display = isBloq ? '' : 'none';
+  if(isBloq) {
+    document.getElementById('f-status').value = 'Bloqueado';
+    document.getElementById('f-fin').value = 'Paga';
+    document.getElementById('f-hospede').value = document.getElementById('f-hospede').value || 'Bloqueado';
+  }
 }
 
 function showTab(tab, btn) {
@@ -454,18 +469,20 @@ function renderCalendario() {
       const ci = new Date(r.check_in  + 'T12:00:00');
       const co = new Date(r.check_out + 'T12:00:00');
 
-      // clamp ao mês
-      const ciClamp = ci < inicioMes ? inicioMes : ci;
-      const coClamp = co > fimMes    ? new Date(`${ano}-${mesStr}-${String(totalDias).padStart(2,'0')}T12:00:00`) : co;
+      // clamp ao mês — detecta se foi cortado nas bordas
+      const clampedStart = ci < inicioMes;
+      const clampedEnd   = co > fimMes;
+      const diaInicio = clampedStart ? 1 : ci.getDate();
+      const diaFim    = clampedEnd   ? totalDias : co.getDate();
 
-      const diaInicio = ciClamp.getDate(); // 1-based (célula âncora)
-      const diaFim    = coClamp.getDate(); // 1-based (célula fim)
-
-      // Barra começa no MEIO do dia de check-in e termina no MEIO do dia de check-out:
-      //   left  = CELL/2  (metade da célula âncora)
-      //   width = (diaFim - diaInicio) * CELL
-      const left    = CELL / 2;
-      const largura = Math.max((diaFim - diaInicio) * CELL, 6);
+      // Posição absoluta dentro do mês (px desde o início da grade de dias):
+      //   normal:  começa no meio do dia de check-in  →  termina no meio do dia de check-out
+      //   clamped: começa na borda esquerda do dia 1  →  termina na borda direita do último dia
+      const absLeft  = (diaInicio - 1) * CELL + (clampedStart ? 0 : CELL / 2);
+      const absRight = (diaFim    - 1) * CELL + (clampedEnd   ? CELL : CELL / 2);
+      const largura  = Math.max(absRight - absLeft, 6);
+      // left relativo ao tdAncora (td do diaInicio)
+      const left = clampedStart ? 0 : CELL / 2;
 
       const {fill, bord} = getCorBarra(r);
       const label = r.hospede || (r.canal==='Bloqueio' ? 'Bloqueado' : r.canal) || '';
@@ -645,14 +662,21 @@ function editarReserva(id) {
 }
 
 async function salvarReserva() {
+  const canal = document.getElementById('f-canal').value;
+  // senha para bloqueio
+  if(canal === 'Bloqueio') {
+    const senhaInput = document.getElementById('f-senha').value;
+    const cfg = await (await fetch('/api/config')).json();
+    if(senhaInput !== (cfg.senha_bloqueio || 'vila2024')) { alert('Senha incorreta!'); return; }
+  }
   const payload = {
     check_in: document.getElementById('f-checkin').value,
     check_out: document.getElementById('f-checkout').value,
     hospede: document.getElementById('f-hospede').value,
     valor_total: parseFloat(document.getElementById('f-valor').value)||null,
     numero_reserva: document.getElementById('f-numero').value,
-    canal: document.getElementById('f-canal').value,
-    status: document.getElementById('f-status').value,
+    canal,
+    status: canal === 'Bloqueio' ? 'Bloqueado' : document.getElementById('f-status').value,
     status_financeiro: document.getElementById('f-fin').value,
     observacoes: document.getElementById('f-obs').value,
     aguardando_detalhes: false,
