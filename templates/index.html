@@ -97,12 +97,11 @@ table.res tr:hover td { background: #f7fafc; }
 /* Barras */
 .cal-barra { position: absolute; top: 12px; bottom: 0; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; font-size: 0; font-weight: 700; color: white; white-space: nowrap; cursor: default; z-index: 5; box-shadow: 0 1px 3px rgba(0,0,0,.18); overflow: visible; }
 .cal-barra:hover { opacity: 0.88; z-index: 20; }
-.cal-barra:hover .cal-tip, .cal-barra.pinned .cal-tip { display: block; }
 .cal-barra-label { font-size: 0.62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; pointer-events: none; }
-.cal-tip { display: none; position: absolute; top: calc(100% + 7px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 8px; padding: 7px 11px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 100; pointer-events: none; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
-.cal-barra.pinned .cal-tip { pointer-events: auto; }
-.cal-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
-.cal-tip::before { content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-bottom-color:#1a202c; }
+#cal-floating-tip { display: none; position: fixed; background: #1a202c; color: white; border-radius: 8px; padding: 7px 11px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 9999; pointer-events: none; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+#cal-floating-tip.pinned { pointer-events: auto; }
+#cal-floating-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
+#cal-floating-tip::before { content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-bottom-color:#1a202c; }
 .cal-tip-editar { display: block; margin-top: 6px; padding: 3px 10px; background: #3182ce; border-radius: 5px; text-align: center; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: white; }
 .cal-tip-editar:hover { background: #2b6cb0; }
 
@@ -165,6 +164,7 @@ table.res tr:hover td { background: #f7fafc; }
 </style>
 </head>
 <body>
+<div id="cal-floating-tip"></div>
 
 <header>
   <h1>🏠 Suite Vila — PMS</h1>
@@ -900,19 +900,13 @@ function renderJanela() {
     span.className = 'cal-barra-label';
     span.textContent = label;
 
-    const tip = document.createElement('div');
-    tip.className = 'cal-tip';
-    tip.innerHTML = `<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
+    const tipHtml = `<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
 
-    barra.addEventListener('click', e => {
-      e.stopPropagation();
-      const wasPinned = barra.classList.contains('pinned');
-      document.querySelectorAll('.cal-barra.pinned').forEach(b=>b.classList.remove('pinned'));
-      if(!wasPinned) barra.classList.add('pinned');
-    });
+    barra.addEventListener('mouseenter', () => _showTip(barra, tipHtml, r.id));
+    barra.addEventListener('mouseleave', _hideTip);
+    barra.addEventListener('click', e => { e.stopPropagation(); _pinTip(barra, tipHtml, r.id); });
 
     barra.appendChild(span);
-    barra.appendChild(tip);
     tdAncora.appendChild(barra);
   });
 }
@@ -1012,17 +1006,11 @@ function renderCalendario() {
       const span=document.createElement('span');
       span.className='cal-barra-label';
       span.textContent=label;
-      const tip=document.createElement('div');
-      tip.className='cal-tip';
-      tip.innerHTML=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
-      barra.addEventListener('click', e => {
-        e.stopPropagation();
-        const wasPinned = barra.classList.contains('pinned');
-        document.querySelectorAll('.cal-barra.pinned').forEach(b=>b.classList.remove('pinned'));
-        if(!wasPinned) barra.classList.add('pinned');
-      });
+      const tipHtml=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
+      barra.addEventListener('mouseenter', () => _showTip(barra, tipHtml, r.id));
+      barra.addEventListener('mouseleave', _hideTip);
+      barra.addEventListener('click', e => { e.stopPropagation(); _pinTip(barra, tipHtml, r.id); });
       barra.appendChild(span);
-      barra.appendChild(tip);
       tdAncora.appendChild(barra);
     });
   });
@@ -1174,8 +1162,47 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{
 
 iniciarSessao();
 
-document.addEventListener('click', () => {
-  document.querySelectorAll('.cal-barra.pinned').forEach(b=>b.classList.remove('pinned'));
+// ─── Tooltip flutuante global ────────────────────────────────
+const _tip = document.getElementById('cal-floating-tip');
+let _tipPinned = false;
+let _tipRid = null;
+
+function _showTip(barra, html, rid) {
+  if(_tipPinned) return;
+  _tip.innerHTML = html;
+  _tip.style.display = 'block';
+  _positionTip(barra);
+  _tipRid = rid;
+}
+function _hideTip() {
+  if(_tipPinned) return;
+  _tip.style.display = 'none';
+}
+function _pinTip(barra, html, rid) {
+  if(_tipPinned && _tipRid === rid) { _unpinTip(); return; }
+  _tipPinned = true;
+  _tipRid = rid;
+  _tip.innerHTML = html;
+  _tip.classList.add('pinned');
+  _tip.style.display = 'block';
+  _positionTip(barra);
+}
+function _unpinTip() {
+  _tipPinned = false;
+  _tipRid = null;
+  _tip.classList.remove('pinned');
+  _tip.style.display = 'none';
+}
+function _positionTip(barra) {
+  const r = barra.getBoundingClientRect();
+  const tw = _tip.offsetWidth || 200;
+  let left = r.left + r.width/2 - tw/2;
+  left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+  _tip.style.left = left + 'px';
+  _tip.style.top  = (r.bottom + 7) + 'px';
+}
+document.addEventListener('click', e => {
+  if(!_tip.contains(e.target)) _unpinTip();
 });
 </script>
 </body>
