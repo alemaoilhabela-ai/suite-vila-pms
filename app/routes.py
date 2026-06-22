@@ -105,6 +105,12 @@ def relatorio_mensal():
         resultado.append({"mes": m, "occ": occ, "adr": adr, **dados})
     return jsonify(resultado)
 
+@bp.post("/api/admin/marcar-todos-pago")
+def marcar_todos_pago():
+    db = get_client()
+    db.table("reservas").update({"status_financeiro": "Paga"}).neq("canal", "Bloqueio").execute()
+    return jsonify({"ok": True, "msg": "Todas as reservas marcadas como Paga"})
+
 @bp.post("/api/agent/run")
 def rodar_agente():
     try:

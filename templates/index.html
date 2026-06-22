@@ -111,11 +111,11 @@ tr:hover td { background: #f7fafc; }
 .cal-legenda { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
 .cal-legenda-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #4a5568; }
 .cal-legenda-cor { width: 14px; height: 14px; border-radius: 3px; }
-.cal-table { border-collapse: collapse; width: 100%; min-width: 700px; }
-.cal-table th { font-size: 0.6rem; color: #a0aec0; font-weight: 700; text-align: center; padding: 3px 0; border-left: 1px solid #e2e8f0; width: 32px; min-width: 32px; }
-.cal-table th.mes-col { width: 52px; min-width: 52px; text-align: left; padding-left: 4px; border-left: none; color: #4a5568; font-size: 0.72rem; }
-.cal-table td { border-left: 1px solid #edf2f7; vertical-align: middle; height: 32px; padding: 0; position: relative; }
-.cal-table td.mes-label { border-left: none; padding: 0 8px 0 4px; font-size: 0.75rem; font-weight: 700; color: #4a5568; white-space: nowrap; background: white; }
+.cal-table { border-collapse: collapse; table-layout: fixed; width: calc(52px + 31*32px); min-width: calc(52px + 31*32px); }
+.cal-table th { font-size: 0.6rem; color: #a0aec0; font-weight: 700; text-align: center; padding: 3px 0; border-left: 1px solid #e2e8f0; width: 32px; }
+.cal-table th.mes-col { width: 52px; text-align: left; padding-left: 4px; border-left: none; color: #4a5568; font-size: 0.72rem; }
+.cal-table td { border-left: 1px solid #edf2f7; vertical-align: middle; height: 32px; padding: 0; position: relative; width: 32px; overflow: visible; }
+.cal-table td.mes-label { width: 52px; border-left: none; padding: 0 8px 0 4px; font-size: 0.75rem; font-weight: 700; color: #4a5568; white-space: nowrap; background: white; overflow: hidden; }
 .cal-table td.fora { background: #fafafa; }
 .cal-table td.livre { background: white; }
 .cal-table tr:hover td { background: #f7fafc; }
@@ -134,10 +134,10 @@ tr:hover td { background: #f7fafc; }
 .cal-barra.paga       { background: linear-gradient(90deg,#276749,#38a169); }
 .cal-barra.naopaga    { background: linear-gradient(90deg,#9b2c2c,#e53e3e); }
 .cal-barra.parcial    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
-/* bordas financeiro para passado (item 4: 50% mais finas) */
-.cal-barra.bord-paga    { outline: 2px solid #38a169; outline-offset: -1px; }
-.cal-barra.bord-naopaga { outline: 2px solid #e53e3e; outline-offset: -1px; }
-.cal-barra.bord-parcial { outline: 2px solid #d69e2e; outline-offset: -1px; }
+/* bordas financeiro para passado */
+.cal-barra.bord-paga    { outline: 1px solid #38a169; outline-offset: -1px; }
+.cal-barra.bord-naopaga { outline: 1px solid #e53e3e; outline-offset: -1px; }
+.cal-barra.bord-parcial { outline: 1px solid #d69e2e; outline-offset: -1px; }
 </style>
 </head>
 <body>
@@ -180,7 +180,7 @@ tr:hover td { background: #f7fafc; }
       <div class="card-header">
         <h2>Mapa de Reservas</h2>
         <div class="card-actions">
-          <select id="filtro-ano" onchange="carregarReservas()"></select>
+          <select id="filtro-ano" onchange="sincronizarAno('filtro-ano'); carregarReservas()"></select>
           <select id="filtro-canal" onchange="filtrarTabela()">
             <option value="">Todos os canais</option>
             <option>Booking</option><option>Airbnb</option><option>Direta</option><option>Bloqueio</option>
@@ -214,7 +214,8 @@ tr:hover td { background: #f7fafc; }
       <div class="card-header">
         <h2>Calendário de Ocupação</h2>
         <div class="card-actions">
-          <select id="cal-ano" onchange="renderCalendario()"></select>
+          <select id="cal-ano" onchange="sincronizarAno('cal-ano'); carregarReservas(true)"></select>
+          <button class="btn btn-danger" onclick="marcarTodosPago()" style="font-size:0.75rem">✅ Marcar todos Pago</button>
           <select id="cal-mes" onchange="renderCalendario()">
             <option value="0">Todos os meses</option>
             <option value="1">Janeiro</option><option value="2">Fevereiro</option>
@@ -345,6 +346,21 @@ const anoAtual = new Date().getFullYear();
 fetch('/api/config').then(r=>r.json()).then(cfg => {
   if(cfg.data_corte_vendas) document.getElementById('data-corte').value = cfg.data_corte_vendas;
 });
+
+function sincronizarAno(origem) {
+  const val = document.getElementById(origem).value;
+  ['filtro-ano','cal-ano','rel-ano'].forEach(id => {
+    if(id !== origem) document.getElementById(id).value = val;
+  });
+}
+
+async function marcarTodosPago() {
+  if(!confirm('Marcar TODAS as reservas como Paga?')) return;
+  const r = await fetch('/api/admin/marcar-todos-pago', {method:'POST'});
+  const d = await r.json();
+  alert(d.msg);
+  carregarReservas(true);
+}
 
 async function salvarCorte() {
   const val = document.getElementById('data-corte').value;
