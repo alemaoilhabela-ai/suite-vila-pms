@@ -8,232 +8,195 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a202c; }
-header { background: #1a365d; color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
-header h1 { font-size: 1.3rem; font-weight: 700; }
-header span { font-size: 0.82rem; opacity: 0.65; }
-.header-right { display: flex; align-items: center; gap: 14px; }
-.user-info { font-size: 0.8rem; opacity: 0.8; }
-.btn-sm { padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,.4); background: transparent; color: white; font-size: 0.78rem; cursor: pointer; }
-.btn-sm:hover { background: rgba(255,255,255,.15); }
+header { background: #1a365d; color: white; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+header h1 { font-size: 1.25rem; font-weight: 700; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-chip { font-size: 0.78rem; opacity: 0.75; }
+.btn-hdr { padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,.4); background: transparent; color: white; font-size: 0.76rem; cursor: pointer; }
+.btn-hdr:hover { background: rgba(255,255,255,.15); }
+.container { max-width: 1440px; margin: 0 auto; padding: 16px 20px; }
 
-/* Modal admin */
+/* KPIs */
+.kpis { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 16px; }
+.kpi { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.kpi label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #718096; }
+.kpi .valor { font-size: 1.6rem; font-weight: 700; color: #1a365d; margin-top: 3px; }
+.kpi .sub { font-size: 0.72rem; color: #a0aec0; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+.tab { padding: 7px 18px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; border: none; background: #e2e8f0; color: #4a5568; transition: all .15s; }
+.tab.active { background: #1a365d; color: white; }
+.subtabs { display: flex; gap: 4px; margin-bottom: 14px; }
+.subtab { padding: 5px 14px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: 600; border: none; background: #edf2f7; color: #4a5568; }
+.subtab.active { background: #2c5282; color: white; }
+
+/* Card */
+.card { background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.07); overflow: hidden; margin-bottom: 16px; }
+.card-header { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.card-header h2 { font-size: 0.92rem; font-weight: 700; }
+.card-actions { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+select, input[type=date], input[type=text], input[type=number], input[type=email], input[type=password], textarea { border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 9px; font-size: 0.82rem; background: white; }
+.btn { padding: 5px 13px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+.btn-primary { background: #1a365d; color: white; }
+.btn-success { background: #276749; color: white; }
+.btn-danger  { background: #c53030; color: white; }
+.btn-gray    { background: #e2e8f0; color: #4a5568; }
+.btn-warning { background: #d97706; color: white; }
+
+/* Alerta */
+.alerta { background: #fffbeb; border: 1px solid #f6e05e; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.83rem; display: none; align-items: center; justify-content: space-between; gap: 10px; }
+.alerta.show { display: flex; }
+
+/* Tabela reservas */
+table.res { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+table.res th { background: #f7fafc; color: #4a5568; font-weight: 700; padding: 8px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+table.res td { padding: 7px 10px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+table.res tr:hover td { background: #f7fafc; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; }
+.b-booking  { background: #bee3f8; color: #2b6cb0; }
+.b-airbnb   { background: #fed7d7; color: #9b2c2c; }
+.b-direta   { background: #c6f6d5; color: #22543d; }
+.b-vrbo     { background: #e9d8fd; color: #553c9a; }
+.b-bloqueio,.b-manutencao { background: #2d3748; color: white; }
+.b-noshow   { background: #fefcbf; color: #7b341e; }
+.b-paga     { background: #c6f6d5; color: #22543d; }
+.b-naopaga  { background: #fed7d7; color: #9b2c2c; }
+.b-parcial  { background: #fefcbf; color: #7b341e; }
+.b-conf     { background: #c6f6d5; color: #22543d; }
+.b-checkin  { background: #bee3f8; color: #2b6cb0; }
+.b-checkout { background: #e2e8f0; color: #4a5568; }
+.pend-row td { background: #fffbeb !important; }
+.pend-nome  { color: #e53e3e; font-style: italic; }
+.btn-icon   { background: #e2e8f0; border: none; padding: 3px 7px; border-radius: 5px; font-size: 0.73rem; cursor: pointer; margin-right: 2px; }
+.btn-icon:hover { background: #cbd5e0; }
+.btn-del    { background: #fed7d7; color: #9b2c2c; }
+
+/* ── Calendário Gantt ─────────────────────────────────── */
+.cal-wrap   { overflow-x: auto; }
+.cal-legenda { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.cal-legenda-item { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: #4a5568; }
+.cal-legenda-cor  { width: 13px; height: 13px; border-radius: 3px; }
+
+.cal-table { border-collapse: collapse; table-layout: fixed; width: calc(64px + 31*32px); min-width: calc(64px + 31*32px); }
+.cal-table thead th { font-size: 0.58rem; color: #a0aec0; font-weight: 700; text-align: center; padding: 2px 0; border-left: 1px solid #e2e8f0; width: 32px; }
+.cal-table thead th.mes-col { width: 64px; text-align: left; padding-left: 4px; border-left: none; color: #4a5568; font-size: 0.72rem; }
+.cal-table td { border-left: 1px solid #edf2f7; vertical-align: middle; height: 36px; padding: 0; position: relative; width: 32px; overflow: visible; }
+.cal-table td.mes-label { width: 64px; border-left: none; padding: 0 6px 0 4px; font-size: 0.73rem; font-weight: 700; color: #4a5568; background: white; overflow: hidden; }
+.cal-table td.fora    { background: #fafafa !important; }
+.cal-table td.weekend { background: #f7f3e3 !important; }
+.cal-table td.hoje-col { background: #ebf8ff !important; outline: 2px solid #3182ce; outline-offset: -2px; }
+.cal-table td.feriado { background: #fff5f5 !important; }
+.cal-table tr:hover td.livre  { background: #f7fafc; }
+.cal-table tr:hover td.weekend{ background: #f0ead6; }
+
+.cal-dow { position: absolute; bottom: 1px; right: 2px; font-size: 0.47rem; color: #cbd5e0; z-index: 1; pointer-events: none; }
+.cal-dow.dow-weekend { color: #f6ad55; }
+.cal-dow.dow-feriado { color: #fc8181; }
+
+/* Barras */
+.cal-barra { position: absolute; top: 5px; bottom: 5px; border-radius: 5px; display: flex; align-items: center; padding: 0 7px; font-size: 0; font-weight: 700; color: white; white-space: nowrap; cursor: default; z-index: 5; box-shadow: 0 1px 3px rgba(0,0,0,.18); overflow: visible; }
+.cal-barra:hover { opacity: 0.88; z-index: 20; }
+.cal-barra:hover .cal-tip { display: block; }
+.cal-barra-label { font-size: 0.62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; pointer-events: none; }
+.cal-tip { display: none; position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 8px; padding: 7px 11px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 100; pointer-events: none; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.cal-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
+.cal-tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a202c; }
+
+/* Cores barras */
+.cal-barra.checkin    { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
+.cal-barra.checkout   { background: linear-gradient(90deg,#a0aec0,#cbd5e0); }
+.cal-barra.confirmada { background: linear-gradient(90deg,#2c5282,#3182ce); }
+.cal-barra.noshow     { background: linear-gradient(90deg,#702459,#b83280); }
+.cal-barra.bloqueio   { background: linear-gradient(90deg,#1a202c,#2d3748); }
+.cal-barra.manutencao { background: linear-gradient(90deg,#744210,#c05621); }
+.cal-barra.paga       { background: linear-gradient(90deg,#276749,#38a169); }
+.cal-barra.naopaga    { background: linear-gradient(90deg,#9b2c2c,#e53e3e); }
+.cal-barra.parcial    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+.cal-barra.bord-paga    { outline: 1px solid #38a169; outline-offset: -1px; }
+.cal-barra.bord-naopaga { outline: 1px solid #e53e3e; outline-offset: -1px; }
+.cal-barra.bord-parcial { outline: 1px solid #d69e2e; outline-offset: -1px; }
+
+/* Relatório */
+.rel-table { width: 100%; border-collapse: collapse; font-size: 0.81rem; }
+.rel-table th { background: #1a365d; color: white; padding: 8px 12px; text-align: right; font-size: 0.68rem; text-transform: uppercase; }
+.rel-table th:first-child { text-align: left; }
+.rel-table td { padding: 7px 12px; border-bottom: 1px solid #f0f4f8; text-align: right; }
+.rel-table td:first-child { text-align: left; font-weight: 600; }
+.rel-table tr:hover td { background: #f7fafc; }
+.rel-table tfoot td { font-weight: 700; background: #edf2f7; border-top: 2px solid #e2e8f0; }
+
+/* Admin tabela */
 .admin-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-.admin-table th { background: #f7fafc; padding: 8px 10px; text-align: left; font-size: 0.7rem; text-transform: uppercase; color: #4a5568; border-bottom: 1px solid #e2e8f0; }
+.admin-table th { background: #f7fafc; padding: 8px 10px; text-align: left; font-size: 0.68rem; text-transform: uppercase; color: #4a5568; border-bottom: 1px solid #e2e8f0; }
 .admin-table td { padding: 8px 10px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
 .papel-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; }
 .papel-admin { background: #1a365d; color: white; }
 .papel-editor { background: #c6f6d5; color: #22543d; }
 .papel-visitante { background: #e2e8f0; color: #4a5568; }
-.perm-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-.perm-item { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #4a5568; }
+.perm-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+.perm-item { display: flex; align-items: center; gap: 4px; font-size: 0.76rem; color: #4a5568; cursor: pointer; }
 .perm-item input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; }
-.container { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
-
-.kpis { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
-.kpi { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
-.kpi label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #718096; }
-.kpi .valor { font-size: 1.7rem; font-weight: 700; color: #1a365d; margin-top: 4px; }
-.kpi .sub { font-size: 0.75rem; color: #a0aec0; margin-top: 2px; }
-
-.tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-.tab { padding: 7px 18px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; border: none; background: #e2e8f0; color: #4a5568; transition: all .15s; }
-.tab.active { background: #1a365d; color: white; }
-
-.card { background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.07); overflow: hidden; }
-.card-header { padding: 12px 18px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-.card-header h2 { font-size: 0.95rem; font-weight: 700; }
-.card-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-select, input[type=date], input[type=text], input[type=number], textarea { border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 9px; font-size: 0.82rem; background: white; }
-.btn { padding: 5px 13px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-.btn-primary { background: #1a365d; color: white; }
-.btn-success { background: #276749; color: white; }
-.btn-warning { background: #d97706; color: white; }
-.btn-danger { background: #c53030; color: white; }
-.btn-gray { background: #e2e8f0; color: #4a5568; }
-
-/* Alerta pendentes */
-.alerta { background: #fffbeb; border: 1px solid #f6e05e; border-radius: 8px; padding: 10px 16px; margin-bottom: 14px; font-size: 0.84rem; display: none; align-items: center; justify-content: space-between; gap: 12px; }
-.alerta.show { display: flex; }
-
-/* Tabela */
-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-th { background: #f7fafc; color: #4a5568; font-weight: 700; padding: 9px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-td { padding: 8px 12px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
-tr:hover td { background: #f7fafc; }
-
-.badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; }
-.b-booking { background: #bee3f8; color: #2b6cb0; }
-.b-airbnb { background: #fed7d7; color: #9b2c2c; }
-.b-direta { background: #c6f6d5; color: #22543d; }
-.b-vrbo { background: #e9d8fd; color: #553c9a; }
-.b-bloqueio { background: #2d3748; color: white; }
-.b-noshow { background: #e9d8fd; color: #553c9a; }
-.b-conf { background: #c6f6d5; color: #22543d; }
-.b-checkin { background: #bee3f8; color: #2b6cb0; }
-.b-checkout { background: #e2e8f0; color: #4a5568; }
-.b-pend { background: #fefcbf; color: #7b341e; }
-.b-sempag { background: #fed7d7; color: #9b2c2c; }
-.b-parcial { background: #fefcbf; color: #7b341e; }
-.b-paga { background: #c6f6d5; color: #22543d; }
-.b-naopaga { background: #fed7d7; color: #9b2c2c; }
-
-.pend-row td { background: #fffbeb !important; }
-.pend-nome { color: #e53e3e; font-style: italic; }
-.btn-icon { background: #e2e8f0; border: none; padding: 3px 8px; border-radius: 5px; font-size: 0.75rem; cursor: pointer; margin-right: 3px; }
-.btn-icon:hover { background: #cbd5e0; }
-.btn-del { background: #fed7d7; color: #9b2c2c; }
-
-/* Barra visual de ocupação */
-.barra-wrap { min-width: 80px; }
-.barra { height: 6px; border-radius: 3px; background: #bee3f8; }
-.barra.airbnb { background: #fed7d7; }
-.barra.direta { background: #c6f6d5; }
-.barra.bloqueio { background: #2d3748; }
-
-/* Config corte */
-.config-bar { background: white; border-radius: 10px; padding: 12px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.07); font-size: 0.83rem; }
-.config-bar label { color: #4a5568; font-weight: 600; white-space: nowrap; }
-.config-bar input { width: 160px; }
 
 /* Modal */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
 .modal { background: white; border-radius: 12px; padding: 24px; width: 500px; max-width: 96vw; max-height: 90vh; overflow-y: auto; }
-.modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 18px; color: #1a365d; }
-.form-group { margin-bottom: 12px; }
-.form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #4a5568; margin-bottom: 3px; }
+.modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #1a365d; }
+.form-group { margin-bottom: 11px; }
+.form-group label { display: block; font-size: 0.73rem; font-weight: 700; color: #4a5568; margin-bottom: 3px; }
 .form-group input, .form-group select, .form-group textarea { width: 100%; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
-/* Modal pendências */
+/* Pendências */
 .pend-item { border: 1px solid #f6e05e; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #fffbeb; }
-.pend-item h4 { font-size: 0.82rem; color: #1a365d; margin-bottom: 8px; }
-.pend-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pend-item h4 { font-size: 0.8rem; color: #1a365d; margin-bottom: 7px; }
+.pend-form { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
 .pend-form input { font-size: 0.8rem; padding: 5px 8px; }
 .pend-actions { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
 
-/* Relatório */
-.rel-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-.rel-table th { background: #1a365d; color: white; padding: 9px 12px; text-align: right; font-size: 0.7rem; text-transform: uppercase; }
-.rel-table th:first-child { text-align: left; }
-.rel-table td { padding: 8px 12px; border-bottom: 1px solid #f0f4f8; text-align: right; }
-.rel-table td:first-child { text-align: left; font-weight: 600; }
-.rel-table tr:hover td { background: #f7fafc; }
-.rel-table tfoot td { font-weight: 700; background: #edf2f7; border-top: 2px solid #e2e8f0; }
-
-/* Calendário Gantt */
-.cal-wrap { overflow-x: auto; min-width: 0; }
-.cal-legenda { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
-.cal-legenda-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #4a5568; }
-.cal-legenda-cor { width: 14px; height: 14px; border-radius: 3px; }
-.cal-table { border-collapse: collapse; table-layout: fixed; width: calc(52px + 31*32px); min-width: calc(52px + 31*32px); }
-.cal-table th { font-size: 0.6rem; color: #a0aec0; font-weight: 700; text-align: center; padding: 3px 0; border-left: 1px solid #e2e8f0; width: 32px; }
-.cal-table th.mes-col { width: 52px; text-align: left; padding-left: 4px; border-left: none; color: #4a5568; font-size: 0.72rem; }
-.cal-table td { border-left: 1px solid #edf2f7; vertical-align: middle; height: 32px; padding: 0; position: relative; width: 32px; overflow: visible; }
-.cal-table td.mes-label { width: 52px; border-left: none; padding: 0 8px 0 4px; font-size: 0.75rem; font-weight: 700; color: #4a5568; white-space: nowrap; background: white; overflow: hidden; }
-.cal-table td.fora { background: #fafafa; }
-.cal-table td.livre { background: white; }
-.cal-table tr:hover td { background: #f7fafc; }
-.cal-table tr:hover td.fora { background: #f0f0f0; }
-.cal-barra-row td { background: white !important; height: 36px; padding: 3px 0; }
-.cal-barra-row td.fora { background: #fafafa !important; }
-.cal-barra { position: absolute; top: 4px; bottom: 4px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; font-size: 0.65rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
-.cal-barra:hover { opacity: 0.9; z-index: 20; }
-.cal-barra:hover .cal-tip { display: block; }
-.cal-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 7px; padding: 6px 10px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 50; pointer-events: none; line-height: 1.5; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
-.cal-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
-.cal-tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a202c; }
-/* cores por status */
-.cal-barra.checkin    { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
-.cal-barra.checkout   { background: linear-gradient(90deg,#a0aec0,#cbd5e0); color:#4a5568; }
-.cal-barra.confirmada { background: linear-gradient(90deg,#2c5282,#3182ce); }
-.cal-barra.noshow     { background: linear-gradient(90deg,#702459,#b83280); }
-.cal-barra.bloqueio   { background: linear-gradient(90deg,#1a202c,#2d3748); }
-/* cores por financeiro — futuro=fill / passado=outline */
-.cal-barra.paga       { background: linear-gradient(90deg,#276749,#38a169); }
-.cal-barra.naopaga    { background: linear-gradient(90deg,#9b2c2c,#e53e3e); }
-.cal-barra.parcial    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
-/* bordas financeiro para passado */
-.cal-barra.bord-paga    { outline: 1px solid #38a169; outline-offset: -1px; }
-.cal-barra.bord-naopaga { outline: 1px solid #e53e3e; outline-offset: -1px; }
-.cal-barra.bord-parcial { outline: 1px solid #d69e2e; outline-offset: -1px; }
+/* Mudar senha */
+.senha-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 300; align-items: center; justify-content: center; }
+.senha-overlay.open { display: flex; }
 </style>
 </head>
 <body>
+
 <header>
   <h1>🏠 Suite Vila — PMS</h1>
   <div class="header-right">
-    <span id="hoje"></span>
-    <span class="user-info" id="user-info"></span>
-    <button class="btn-sm" id="btn-admin" style="display:none" onclick="abrirAdmin()">⚙️ Usuários</button>
-    <button class="btn-sm" onclick="sair()">Sair</button>
+    <span id="hoje" style="font-size:0.78rem;opacity:.6"></span>
+    <span class="user-chip" id="user-chip"></span>
+    <button class="btn-hdr" id="btn-sair" onclick="sair()">Sair</button>
   </div>
 </header>
 
 <div class="container">
 
-  <div class="config-bar">
-    <label>📅 Disponível até:</label>
-    <input type="date" id="data-corte">
-    <button class="btn btn-primary" onclick="salvarCorte()">Salvar</button>
-    <span style="color:#718096;font-size:0.78rem">Reservas do iCal após essa data serão ignoradas</span>
-  </div>
-
+  <!-- KPIs -->
   <div class="kpis">
     <div class="kpi"><label>Diárias (ano)</label><div class="valor" id="k-diarias">—</div><div class="sub">noites ocupadas</div></div>
-    <div class="kpi"><label>Faturamento Bruto</label><div class="valor" id="k-fat">—</div><div class="sub">valor total</div></div>
-    <div class="kpi"><label>Faturamento Real</label><div class="valor" id="k-fat-real">—</div><div class="sub">após comissões</div></div>
+    <div class="kpi"><label>Fat. Bruto</label><div class="valor" id="k-fat">—</div><div class="sub">valor total</div></div>
+    <div class="kpi"><label>Fat. Real</label><div class="valor" id="k-fat-real">—</div><div class="sub">após comissões</div></div>
     <div class="kpi"><label>ADR médio</label><div class="valor" id="k-adr">—</div><div class="sub">por diária</div></div>
     <div class="kpi"><label>Ocupação</label><div class="valor" id="k-occ">—</div><div class="sub">do ano</div></div>
   </div>
 
+  <!-- Alerta pendentes -->
   <div id="alerta-pendentes" class="alerta">
     <span id="alerta-texto"></span>
     <button class="btn btn-warning" onclick="abrirPendentes()">⚡ Resolver pendências</button>
   </div>
 
+  <!-- Tabs principais -->
   <div class="tabs">
     <button class="tab active" onclick="showTab('calendario',this)">Calendário</button>
     <button class="tab" onclick="showTab('reservas',this)">Reservas</button>
-    <button class="tab" onclick="showTab('relatorio',this)">Relatório Mensal</button>
+    <button class="tab" id="tab-btn-admin" style="display:none" onclick="showTab('admin',this)">⚙️ Admin</button>
   </div>
 
-  <!-- Reservas -->
-  <div id="tab-reservas" style="display:none">
-    <div class="card">
-      <div class="card-header">
-        <h2>Mapa de Reservas</h2>
-        <div class="card-actions">
-          <select id="filtro-ano" onchange="sincronizarAno('filtro-ano'); carregarReservas()"></select>
-          <select id="filtro-canal" onchange="filtrarTabela()">
-            <option value="">Todos os canais</option>
-            <option>Booking</option><option>Airbnb</option><option>Direta</option><option>Bloqueio</option>
-          </select>
-          <select id="filtro-fin" onchange="filtrarTabela()">
-            <option value="">Financeiro</option>
-            <option>Paga</option><option>Não Paga</option>
-          </select>
-          <button class="btn btn-success" onclick="abrirModal()">+ Nova Reserva</button>
-          <button class="btn btn-primary" onclick="rodarAgente()">🔄 Verificar iCal</button>
-        </div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th>Hóspede</th><th>Check-in</th><th>Check-out</th>
-            <th>Diárias</th><th>Ocupação</th><th>Valor</th><th>ADR</th>
-            <th>Canal</th><th>Status</th><th>Financeiro</th><th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-reservas">
-          <tr><td colspan="12" style="text-align:center;padding:30px;color:#a0aec0">Carregando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Calendário -->
+  <!-- ─── CALENDÁRIO ─────────────────────────────────────── -->
   <div id="tab-calendario">
     <div class="card">
       <div class="card-header">
@@ -253,69 +216,173 @@ tr:hover td { background: #f7fafc; }
             <option value="">Todos os status</option>
             <option>Check in</option><option>Check out</option>
             <option>Reserva Confirmada</option><option>Bloqueado</option>
-            <option>No Show</option><option>Reserva sem Pag.</option>
-            <option>Reserva com Pag. Parcial</option>
+            <option>Manutenção</option><option>No Show</option>
+            <option>Reserva sem Pag.</option><option>Reserva com Pag. Parcial</option>
           </select>
         </div>
       </div>
-      <div style="padding:16px">
+      <div style="padding:14px">
         <div class="cal-legenda">
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#3182ce"></div>Check in</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#718096"></div>Check out</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Confirmada (passado)</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#48bb78"></div>Paga (futuro)</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#ed8936"></div>Não Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#cbd5e0"></div>Check out</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#e53e3e"></div>Não Paga (futuro)</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#2d3748"></div>Bloqueado</div>
-          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#c53030"></div>Sem pagamento</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#c05621"></div>Manutenção</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f0f4f8;border:1px solid #e2e8f0"></div>Livre</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f7f3e3;border:1px solid #e2e8f0"></div>FDS</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#fff5f5;border:1px solid #e2e8f0"></div>Feriado</div>
+          <div class="cal-legenda-item" style="border: 2px solid #38a169; border-radius:3px; padding:0 4px">Paga (passado)</div>
+          <div class="cal-legenda-item" style="border: 2px solid #e53e3e; border-radius:3px; padding:0 4px">Não Paga (passado)</div>
         </div>
-        <div class="cal-wrap">
-          <table class="cal-table" id="cal-table"></table>
-        </div>
+        <div class="cal-wrap"><table class="cal-table" id="cal-table"></table></div>
       </div>
     </div>
   </div>
 
-  <!-- Relatório -->
-  <div id="tab-relatorio" style="display:none">
+  <!-- ─── RESERVAS ───────────────────────────────────────── -->
+  <div id="tab-reservas" style="display:none">
     <div class="card">
       <div class="card-header">
-        <h2>Relatório Mensal</h2>
-        <select id="rel-ano" onchange="carregarRelatorio()"></select>
+        <h2>Mapa de Reservas</h2>
+        <div class="card-actions">
+          <select id="filtro-ano" onchange="sincronizarAno('filtro-ano'); carregarReservas()"></select>
+          <select id="filtro-canal" onchange="filtrarTabela()">
+            <option value="">Todos os canais</option>
+            <option>Booking</option><option>Airbnb</option><option>Direta</option><option>Bloqueio</option><option>Manutenção</option>
+          </select>
+          <select id="filtro-fin" onchange="filtrarTabela()">
+            <option value="">Financeiro</option>
+            <option>Paga</option><option>Não Paga</option><option>Parcial</option>
+          </select>
+          <button class="btn btn-success" onclick="abrirModal()">+ Nova Reserva</button>
+          <button class="btn btn-primary" onclick="rodarAgente()">🔄 Verificar iCal</button>
+        </div>
       </div>
-      <div style="padding:16px;overflow-x:auto">
-        <table class="rel-table">
-          <thead>
-            <tr>
-              <th>Mês</th><th>Reservas</th><th>Diárias</th>
-              <th>Fat. Bruto</th><th>Comissão</th><th>Fat. Real</th>
-              <th>ADR</th><th>OCC</th>
-            </tr>
-          </thead>
-          <tbody id="rel-body"></tbody>
-          <tfoot id="rel-foot"></tfoot>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal admin usuários -->
-<div class="modal-overlay" id="modal-admin">
-  <div class="modal" style="width:680px">
-    <h3>⚙️ Gerenciar Usuários</h3>
-    <div style="overflow-x:auto;margin-bottom:14px">
-      <table class="admin-table" id="admin-table">
-        <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Telas</th><th>Ativo</th><th></th></tr></thead>
-        <tbody id="admin-tbody"></tbody>
+      <table class="res">
+        <thead>
+          <tr>
+            <th>#</th><th>Hóspede</th><th>Check-in</th><th>Check-out</th>
+            <th>Diárias</th><th>Valor</th><th>ADR</th><th>Canal</th>
+            <th>Status</th><th>Financeiro</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-reservas">
+          <tr><td colspan="11" style="text-align:center;padding:28px;color:#a0aec0">Carregando...</td></tr>
+        </tbody>
       </table>
     </div>
-    <button class="btn btn-success" onclick="abrirNovoUsuario()">+ Novo usuário</button>
-    <div class="modal-footer"><button class="btn btn-gray" onclick="fecharAdmin()">Fechar</button></div>
+  </div>
+
+  <!-- ─── ADMIN ──────────────────────────────────────────── -->
+  <div id="tab-admin" style="display:none">
+    <div class="subtabs">
+      <button class="subtab active" onclick="showSubTab('relatorio',this)">📊 Relatório</button>
+      <button class="subtab" onclick="showSubTab('usuarios',this)">👥 Usuários</button>
+      <button class="subtab" onclick="showSubTab('configuracoes',this)">🛠 Configurações</button>
+    </div>
+
+    <!-- Relatório -->
+    <div id="subtab-relatorio">
+      <div class="card">
+        <div class="card-header">
+          <h2>Relatório Mensal</h2>
+          <select id="rel-ano" onchange="carregarRelatorio()"></select>
+        </div>
+        <div style="padding:14px;overflow-x:auto">
+          <table class="rel-table">
+            <thead><tr><th>Mês</th><th>Reservas</th><th>Diárias</th><th>Fat. Bruto</th><th>Comissão</th><th>Fat. Real</th><th>ADR</th><th>OCC</th></tr></thead>
+            <tbody id="rel-body"></tbody>
+            <tfoot id="rel-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usuários -->
+    <div id="subtab-usuarios" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <h2>Gerenciar Usuários</h2>
+          <button class="btn btn-success" onclick="abrirNovoUsuario()">+ Novo usuário</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Telas</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="admin-tbody"><tr><td colspan="6" style="text-align:center;padding:20px;color:#a0aec0">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Configurações -->
+    <div id="subtab-configuracoes" style="display:none">
+      <div class="card">
+        <div class="card-header"><h2>Configurações</h2></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:16px;max-width:500px">
+          <div>
+            <label style="font-size:0.78rem;font-weight:700;color:#4a5568;display:block;margin-bottom:5px">📅 Disponível até (data de corte de vendas)</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="date" id="data-corte" style="width:180px">
+              <button class="btn btn-primary" onclick="salvarCorte()">Salvar</button>
+            </div>
+            <p style="font-size:0.72rem;color:#718096;margin-top:5px">Reservas do iCal após essa data são ignoradas. Ao salvar, cria um Bloqueio automático por 2 anos.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ─── Modal pendências ─────────────────────────────────── -->
+<div class="modal-overlay" id="modal-pend">
+  <div class="modal" style="width:580px">
+    <h3>⚡ Resolver Pendências</h3>
+    <div id="pend-lista"></div>
+    <div class="modal-footer"><button class="btn btn-gray" onclick="fecharPendentes()">Fechar</button></div>
   </div>
 </div>
 
-<!-- Modal novo/editar usuário -->
+<!-- ─── Modal reserva ────────────────────────────────────── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-titulo">Nova Reserva</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Check-in</label><input type="date" id="f-checkin"></div>
+      <div class="form-group"><label>Check-out</label><input type="date" id="f-checkout"></div>
+    </div>
+    <div class="form-group"><label>Hóspede</label><input type="text" id="f-hospede" placeholder="Nome completo"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Valor Total (R$)</label><input type="number" id="f-valor" step="0.01"></div>
+      <div class="form-group"><label>Nº Reserva</label><input type="text" id="f-numero" placeholder="Ex: 6711533358"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Canal</label>
+        <select id="f-canal" onchange="onCanalChange(this.value)">
+          <option>Booking</option><option>Airbnb</option><option>Direta</option><option>Vrbo</option><option>Bloqueio</option><option>Manutenção</option><option>No Show</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status Financeiro</label>
+        <select id="f-fin"><option>Não Paga</option><option>Paga</option><option>Parcial</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Status</label>
+      <select id="f-status">
+        <option>Reserva Confirmada</option><option>Check in</option><option>Check out</option>
+        <option>Reserva sem Pag.</option><option>Reserva com Pag. Parcial</option>
+        <option>No Show</option><option>Bloqueado</option><option>Manutenção</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarReserva()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal novo/editar usuário ───────────────────────── -->
 <div class="modal-overlay" id="modal-usuario">
   <div class="modal" style="width:460px">
     <h3 id="usuario-titulo">Novo Usuário</h3>
@@ -331,7 +398,10 @@ tr:hover td { background: #f7fafc; }
           <option value="admin">Admin</option>
         </select>
       </div>
-      <div class="form-group"><label>Senha <span id="u-senha-hint" style="font-weight:400;color:#a0aec0">(deixe em branco para não alterar)</span></label><input type="password" id="u-senha" placeholder="Nova senha"></div>
+      <div class="form-group">
+        <label>Senha <span id="u-senha-hint" style="font-weight:400;color:#a0aec0;display:none">(em branco = não altera)</span></label>
+        <input type="password" id="u-senha" placeholder="Senha">
+      </div>
     </div>
     <div class="form-group" id="u-perms-wrap">
       <label>Telas permitidas</label>
@@ -339,6 +409,7 @@ tr:hover td { background: #f7fafc; }
         <label class="perm-item"><input type="checkbox" id="p-calendario"> Calendário</label>
         <label class="perm-item"><input type="checkbox" id="p-reservas"> Reservas</label>
         <label class="perm-item"><input type="checkbox" id="p-relatorio"> Relatório</label>
+        <label class="perm-item"><input type="checkbox" id="p-admin"> Admin</label>
         <label class="perm-item"><input type="checkbox" id="p-config"> Configurações</label>
       </div>
     </div>
@@ -352,372 +423,137 @@ tr:hover td { background: #f7fafc; }
   </div>
 </div>
 
-<!-- Modal reserva -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h3 id="modal-titulo">Nova Reserva</h3>
-    <div class="form-row">
-      <div class="form-group"><label>Check-in</label><input type="date" id="f-checkin"></div>
-      <div class="form-group"><label>Check-out</label><input type="date" id="f-checkout"></div>
-    </div>
-    <div class="form-group"><label>Hóspede</label><input type="text" id="f-hospede" placeholder="Nome completo"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Valor Total (R$)</label><input type="number" id="f-valor" step="0.01"></div>
-      <div class="form-group"><label>Nº Reserva</label><input type="text" id="f-numero" placeholder="Ex: 6711533358"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Canal</label>
-        <select id="f-canal" onchange="onCanalChange(this.value)"><option>Booking</option><option>Airbnb</option><option>Direta</option><option>Vrbo</option><option>Bloqueio</option><option>No Show</option></select>
-      </div>
-      <div class="form-group"><label>Status Financeiro</label>
-        <select id="f-fin"><option>Não Paga</option><option>Paga</option><option>Parcial</option></select>
-      </div>
-    </div>
-    <div class="form-group"><label>Status</label>
-      <select id="f-status">
-        <option>Reserva Confirmada</option><option>Check in</option><option>Check out</option>
-        <option>Reserva sem Pag.</option><option>Reserva com Pag. Parcial</option>
-        <option>No Show</option><option>Bloqueado</option>
-      </select>
-    </div>
-<div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
+<!-- ─── Modal mudar senha (primeiro acesso / reset) ─────── -->
+<div class="senha-overlay" id="modal-mudar-senha">
+  <div class="modal" style="width:380px">
+    <h3 id="mudar-senha-titulo">🔑 Defina sua senha</h3>
+    <p id="mudar-senha-msg" style="font-size:0.82rem;color:#4a5568;margin-bottom:14px">Por segurança, defina uma senha pessoal antes de continuar.</p>
+    <div class="form-group"><label>Nova Senha</label><input type="password" id="nova-senha" placeholder="Mínimo 6 caracteres"></div>
+    <div class="form-group"><label>Confirmar Senha</label><input type="password" id="conf-senha" placeholder="Repita a senha"></div>
     <div class="modal-footer">
-      <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarReserva()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal pendências -->
-<div class="modal-overlay" id="modal-pend">
-  <div class="modal" style="width:580px">
-    <h3>⚡ Resolver Pendências</h3>
-    <div id="pend-lista"></div>
-    <div class="modal-footer">
-      <button class="btn btn-gray" onclick="fecharPendentes()">Fechar</button>
+      <button class="btn btn-primary" onclick="confirmarNovaSenha()">Salvar senha</button>
     </div>
   </div>
 </div>
 
 <script>
-const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIAS_SM = ['Do','Se','Te','Qa','Qi','Sx','Sa']; // getDay() 0=Dom
 const COMISSOES = {Booking:0.13, Airbnb:0.03, Direta:0.0, Vrbo:0.0};
-const TELAS = ['calendario','reservas','relatorio','config'];
-let reservasCache = [];
-let editandoId = null;
-let meUser = null;
-let editandoUsuarioId = null;
+const TELAS = ['calendario','reservas','relatorio','admin','config'];
+
+let reservasCache  = [];
+let editandoId     = null;
+let editandoUserId = null;
+let _usersData     = [];
+let meUser         = null;
 
 document.getElementById('hoje').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
-// --- Auth ---
-async function iniciarSessao() {
-  const r = await fetch('/api/auth/me');
-  if(!r.ok) { window.location.href='/login'; return; }
-  meUser = await r.json();
-  document.getElementById('user-info').textContent = meUser.nome + ' (' + meUser.papel + ')';
-  if(meUser.papel === 'admin') document.getElementById('btn-admin').style.display = '';
-  // esconde abas sem permissão (admin vê tudo)
-  if(meUser.papel !== 'admin') {
-    const perms = meUser.permissoes || [];
-    if(!perms.includes('calendario')) document.querySelectorAll('[onclick*="calendario"]').forEach(b=>b.style.display='none');
-    if(!perms.includes('reservas'))   document.querySelectorAll('[onclick*="reservas"]').forEach(b=>b.style.display='none');
-    if(!perms.includes('relatorio'))  document.querySelectorAll('[onclick*="relatorio"]').forEach(b=>b.style.display='none');
-  }
-  carregarReservas(true);
-}
-
-async function sair() {
-  await fetch('/api/auth/logout', {method:'POST'});
-  window.location.href = '/login';
-}
-
-// --- Admin usuários ---
-async function abrirAdmin() {
-  document.getElementById('modal-admin').classList.add('open');
-  const r = await fetch('/api/admin/usuarios');
-  const users = await r.json();
-  const tbody = document.getElementById('admin-tbody');
-  tbody.innerHTML = users.map(u => `
-    <tr>
-      <td><strong>${esc(u.nome)}</strong></td>
-      <td>${esc(u.email)}</td>
-      <td><span class="papel-badge papel-${u.papel}">${u.papel}</span></td>
-      <td style="font-size:0.72rem;color:#718096">${u.papel==='admin'?'Tudo':Object.entries(u.permissoes||{}).filter(([,v])=>v).map(([k])=>k).join(', ')||'—'}</td>
-      <td>${u.ativo?'✅':'❌'}</td>
-      <td><button class="btn-icon" onclick="editarUsuario(${JSON.stringify(JSON.stringify(u))})">✏️</button>
-          <button class="btn-icon btn-del" onclick="deletarUsuario(${u.id},'${esc(u.nome)}')">✕</button></td>
-    </tr>`).join('');
-}
-
-function fecharAdmin() { document.getElementById('modal-admin').classList.remove('open'); }
-
-function abrirNovoUsuario() {
-  editandoUsuarioId = null;
-  document.getElementById('usuario-titulo').textContent = 'Novo Usuário';
-  document.getElementById('u-nome').value = '';
-  document.getElementById('u-email').value = '';
-  document.getElementById('u-senha').value = '';
-  document.getElementById('u-papel').value = 'visitante';
-  document.getElementById('u-senha-hint').style.display = 'none';
-  document.getElementById('u-ativo-wrap').style.display = 'none';
-  TELAS.forEach(t => { const el = document.getElementById('p-'+t); if(el) el.checked = false; });
-  onPapelChange();
-  document.getElementById('modal-usuario').classList.add('open');
-}
-
-function editarUsuario(jsonStr) {
-  const u = JSON.parse(jsonStr);
-  editandoUsuarioId = u.id;
-  document.getElementById('usuario-titulo').textContent = 'Editar Usuário';
-  document.getElementById('u-nome').value = u.nome;
-  document.getElementById('u-email').value = u.email;
-  document.getElementById('u-senha').value = '';
-  document.getElementById('u-papel').value = u.papel;
-  document.getElementById('u-senha-hint').style.display = '';
-  document.getElementById('u-ativo-wrap').style.display = '';
-  document.getElementById('u-ativo').checked = u.ativo;
-  TELAS.forEach(t => { const el = document.getElementById('p-'+t); if(el) el.checked = !!(u.permissoes||{})[t]; });
-  onPapelChange();
-  document.getElementById('modal-usuario').classList.add('open');
-}
-
-function onPapelChange() {
-  const isAdmin = document.getElementById('u-papel').value === 'admin';
-  document.getElementById('u-perms-wrap').style.opacity = isAdmin ? '0.4' : '1';
-  document.getElementById('u-perms-wrap').style.pointerEvents = isAdmin ? 'none' : '';
-}
-
-function fecharUsuario() { document.getElementById('modal-usuario').classList.remove('open'); }
-
-async function salvarUsuario() {
-  const papel = document.getElementById('u-papel').value;
-  const perms = {};
-  TELAS.forEach(t => { const el = document.getElementById('p-'+t); if(el) perms[t] = el.checked; });
-  const payload = {
-    nome: document.getElementById('u-nome').value.trim(),
-    email: document.getElementById('u-email').value.trim(),
-    senha: document.getElementById('u-senha').value,
-    papel,
-    permissoes: perms,
-    ativo: document.getElementById('u-ativo').checked ?? true,
-  };
-  if(!payload.nome || !payload.email) return alert('Nome e e-mail são obrigatórios');
-  if(!editandoUsuarioId && !payload.senha) return alert('Senha obrigatória para novo usuário');
-  const url = editandoUsuarioId ? `/api/admin/usuarios/${editandoUsuarioId}` : '/api/admin/usuarios';
-  const method = editandoUsuarioId ? 'PUT' : 'POST';
-  const r = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-  if(!r.ok) { const d=await r.json(); return alert(d.error||'Erro'); }
-  fecharUsuario();
-  abrirAdmin();
-}
-
-async function deletarUsuario(id, nome) {
-  if(!confirm(`Excluir o usuário "${nome}"?`)) return;
-  await fetch(`/api/admin/usuarios/${id}`, {method:'DELETE'});
-  abrirAdmin();
-}
-
 const anoAtual = new Date().getFullYear();
-[document.getElementById('filtro-ano'), document.getElementById('rel-ano'), document.getElementById('cal-ano')].forEach(sel => {
-  for(let a = anoAtual+2; a >= 2024; a--) {
+['filtro-ano','cal-ano','rel-ano'].forEach(id => {
+  const sel = document.getElementById(id);
+  for(let a=anoAtual+2; a>=2024; a--) {
     const o = document.createElement('option');
     o.value = a; o.textContent = a;
-    if(a === anoAtual) o.selected = true;
+    if(a===anoAtual) o.selected=true;
     sel.appendChild(o);
   }
 });
 
-// Carrega config
-fetch('/api/config').then(r=>r.json()).then(cfg => {
-  if(cfg.data_corte_vendas) document.getElementById('data-corte').value = cfg.data_corte_vendas;
-});
-
-function sincronizarAno(origem) {
-  const val = document.getElementById(origem).value;
-  ['filtro-ano','cal-ano','rel-ano'].forEach(id => {
-    if(id !== origem) document.getElementById(id).value = val;
-  });
+// feriados fixos e móveis BR
+function getFeriados(ano) {
+  const f = new Set([
+    `${ano}-01-01`,`${ano}-04-21`,`${ano}-05-01`,
+    `${ano}-09-07`,`${ano}-10-12`,`${ano}-11-02`,
+    `${ano}-11-15`,`${ano}-11-20`,`${ano}-12-25`,
+  ]);
+  // Páscoa (algoritmo de Meeus/Jones/Butcher)
+  const a=ano%19,b=Math.floor(ano/100),c=ano%100,d=Math.floor(b/4),e=b%4,f2=Math.floor((b+8)/25),g=Math.floor((b-f2+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mes=Math.floor((h+l-7*m+114)/31),dia=((h+l-7*m+114)%31)+1;
+  const pascoa=new Date(ano,mes-1,dia);
+  const ad=(d)=>{ const x=new Date(pascoa); x.setDate(x.getDate()+d); return x.toISOString().slice(0,10); };
+  f.add(ad(-48)); f.add(ad(-47)); f.add(ad(-2)); f.add(ad(0)); f.add(ad(60));
+  return f;
 }
 
-
-async function salvarCorte() {
-  const val = document.getElementById('data-corte').value;
-  if(!val) return;
-  await fetch('/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({data_corte_vendas: val})});
-  const fim = new Date(new Date(val).getTime()+730*86400000).toLocaleDateString('pt-BR');
-  alert('Data de corte salva! Bloqueio criado até ' + fim);
+// ─── Auth ─────────────────────────────────────────────────
+async function iniciarSessao() {
+  const r = await fetch('/api/auth/me');
+  if(!r.ok) { window.location.href='/login'; return; }
+  meUser = await r.json();
+  document.getElementById('user-chip').textContent = meUser.nome + ' · ' + meUser.papel;
+  // mostra aba admin se for admin ou tiver permissão admin
+  if(meUser.papel==='admin' || (meUser.permissoes||[]).includes('admin')) {
+    document.getElementById('tab-btn-admin').style.display='';
+  }
+  if(meUser.primeiro_acesso) {
+    document.getElementById('mudar-senha-titulo').textContent = '🔑 Bem-vindo! Defina sua senha';
+    document.getElementById('modal-mudar-senha').classList.add('open');
+  }
+  // carrega config
+  fetch('/api/config').then(r=>r.json()).then(cfg=>{
+    if(cfg.data_corte_vendas) document.getElementById('data-corte').value=cfg.data_corte_vendas;
+  });
   carregarReservas(true);
 }
 
-function onCanalChange(val) {
-  const isBloq = val === 'Bloqueio';
-  document.getElementById('f-senha-wrap').style.display = isBloq ? '' : 'none';
-  if(isBloq) {
-    document.getElementById('f-status').value = 'Bloqueado';
-    document.getElementById('f-fin').value = 'Paga';
-    document.getElementById('f-hospede').value = document.getElementById('f-hospede').value || 'Bloqueado';
-  }
+async function sair() {
+  await fetch('/api/auth/logout',{method:'POST'});
+  window.location.href='/login';
 }
 
+async function confirmarNovaSenha() {
+  const nova  = document.getElementById('nova-senha').value;
+  const conf  = document.getElementById('conf-senha').value;
+  if(nova.length<6) return alert('Senha deve ter pelo menos 6 caracteres');
+  if(nova!==conf)   return alert('Senhas não conferem');
+  const r = await fetch('/api/auth/mudar-senha',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nova_senha:nova})});
+  if(r.ok) { document.getElementById('modal-mudar-senha').classList.remove('open'); }
+  else { const d=await r.json(); alert(d.error||'Erro'); }
+}
+
+// ─── Tabs ─────────────────────────────────────────────────
 function showTab(tab, btn) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-reservas').style.display    = tab==='reservas'   ? '' : 'none';
-  document.getElementById('tab-calendario').style.display  = tab==='calendario' ? '' : 'none';
-  document.getElementById('tab-relatorio').style.display   = tab==='relatorio'  ? '' : 'none';
-  if(tab==='relatorio')  carregarRelatorio();
+  ['calendario','reservas','admin'].forEach(id=>{
+    document.getElementById('tab-'+id).style.display = tab===id ? '' : 'none';
+  });
   if(tab==='calendario') renderCalendario();
-  if(tab==='reservas')   { filtrarTabela(); }
+  if(tab==='reservas')   filtrarTabela();
+  if(tab==='admin')      { carregarRelatorio(); carregarUsuarios(); }
 }
 
-function getCorBarra(r) {
-  const status = r.status || '';
-  const fin    = r.status_financeiro || 'Não Paga';
-
-  if(r.canal === 'Bloqueio' || status === 'Bloqueado') return {fill:'bloqueio', bord:null};
-
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const ci = new Date(r.check_in  + 'T00:00:00');
-
-  const finClass = fin === 'Paga' ? 'paga' : (fin === 'Parcial' || status.includes('Parcial') ? 'parcial' : 'naopaga');
-  const bordClass = 'bord-' + finClass;
-
-  if(ci >= hoje) {
-    // futuro: fill = financeiro (paga=verde, naopaga=vermelho, parcial=amarelo), sem borda
-    return {fill: finClass, bord: null};
-  }
-  // passado/presente: fill = status, borda = financeiro
-  let fillClass = 'confirmada';
-  if(status === 'Check in')          fillClass = 'checkin';
-  else if(status === 'Check out')    fillClass = 'checkout';
-  else if(status === 'No Show')      fillClass = 'noshow';
-  else if(status.includes('sem Pag'))fillClass = 'naopaga';
-  else if(status.includes('Parcial'))fillClass = 'parcial';
-  return {fill: fillClass, bord: bordClass};
-}
-
-function renderCalendario() {
-  const ano       = parseInt(document.getElementById('cal-ano').value);
-  const mesFiltro = parseInt(document.getElementById('cal-mes').value || '0');
-  const stFiltro  = document.getElementById('cal-status').value || '';
-  const diasMes   = [31,28,31,30,31,30,31,31,30,31,30,31];
-  const CELL      = 32; // px por célula de dia
-
-  // filtra reservas do ano (e opcionalmente mês e status)
-  const reservasAno = reservasCache.filter(r => {
-    if(!r.check_in || !r.check_out) return false;
-    const tocaAno = r.check_in.startsWith(ano) || r.check_out.startsWith(ano);
-    if(!tocaAno) return false;
-    if(mesFiltro) {
-      const mes = parseInt(r.check_in.slice(5,7));
-      if(mes !== mesFiltro) return false;
-    }
-    if(stFiltro && r.status !== stFiltro) return false;
-    return true;
+function showSubTab(sub, btn) {
+  document.querySelectorAll('.subtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['relatorio','usuarios','configuracoes'].forEach(id=>{
+    document.getElementById('subtab-'+id).style.display = sub===id ? '' : 'none';
   });
-
-  // KPIs ao vivo com as reservas filtradas
-  atualizarKPIs(reservasAno);
-
-  const table = document.getElementById('cal-table');
-  table.innerHTML = '';
-
-  // cabeçalho dias 1-31
-  const thead = document.createElement('thead');
-  let thRow = '<tr><th class="mes-col"></th>';
-  for(let d=1;d<=31;d++) thRow += `<th>${d}</th>`;
-  thRow += '</tr>';
-  thead.innerHTML = thRow;
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-
-  MESES.forEach((nome, mi) => {
-    const mes = mi + 1;
-    const totalDias = diasMes[mi];
-    const mesStr = String(mes).padStart(2,'0');
-    const inicioMes = new Date(`${ano}-${mesStr}-01T12:00:00`);
-    const fimMes   = new Date(`${ano}-${mesStr}-${String(totalDias).padStart(2,'0')}T12:00:00`);
-
-    // reservas que tocam este mês
-    const resDoMes = reservasAno.filter(r => {
-      const ci = new Date(r.check_in  + 'T12:00:00');
-      const co = new Date(r.check_out + 'T12:00:00');
-      return ci <= fimMes && co > inicioMes;
-    });
-
-    // linha de fundo (dias livres/fora)
-    const trFundo = document.createElement('tr');
-    trFundo.className = 'cal-barra-row';
-    let tdFundo = `<td class="mes-label" rowspan="1">${nome.slice(0,3).toUpperCase()}</td>`;
-    for(let d=1;d<=31;d++) {
-      tdFundo += `<td class="${d>totalDias?'fora':'livre'}" style="position:relative"></td>`;
-    }
-    trFundo.innerHTML = tdFundo;
-    tbody.appendChild(trFundo);
-
-    // desenha barras sobre as células usando position absolute
-    resDoMes.forEach(r => {
-      const ci = new Date(r.check_in  + 'T12:00:00');
-      const co = new Date(r.check_out + 'T12:00:00');
-
-      // clamp ao mês — detecta se foi cortado nas bordas
-      const clampedStart = ci < inicioMes;
-      const clampedEnd   = co > fimMes;
-      const diaInicio = clampedStart ? 1 : ci.getDate();
-      const diaFim    = clampedEnd   ? totalDias : co.getDate();
-
-      // Posição absoluta dentro do mês (px desde o início da grade de dias):
-      //   normal:  começa no meio do dia de check-in  →  termina no meio do dia de check-out
-      //   clamped: começa na borda esquerda do dia 1  →  termina na borda direita do último dia
-      const absLeft  = (diaInicio - 1) * CELL + (clampedStart ? 0 : CELL / 2);
-      const absRight = (diaFim    - 1) * CELL + (clampedEnd   ? CELL : CELL / 2);
-      const largura  = Math.max(absRight - absLeft, 6);
-      // left relativo ao tdAncora (td do diaInicio)
-      const left = clampedStart ? 0 : CELL / 2;
-
-      const {fill, bord} = getCorBarra(r);
-      const label = r.hospede || (r.canal==='Bloqueio' ? 'Bloqueado' : r.canal) || '';
-
-      const tds = trFundo.querySelectorAll('td');
-      const tdAncora = tds[diaInicio]; // tds[0]=mes-label, tds[N]=dia N
-      if(!tdAncora) return;
-
-      tdAncora.style.overflow = 'visible';
-      const barra = document.createElement('div');
-      barra.className = `cal-barra ${fill}${bord ? ' '+bord : ''}`;
-      barra.style.cssText = `left:${left}px; width:${largura}px;`;
-      const tip = document.createElement('div');
-      tip.className = 'cal-tip';
-      tip.innerHTML = `<strong>${label||r.canal}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
-      barra.textContent = label;
-      barra.appendChild(tip);
-      tdAncora.appendChild(barra);
-    });
-  });
-
-  table.appendChild(tbody);
+  if(sub==='relatorio') carregarRelatorio();
+  if(sub==='usuarios')  carregarUsuarios();
 }
 
+function sincronizarAno(origem) {
+  const val = document.getElementById(origem).value;
+  ['filtro-ano','cal-ano','rel-ano'].forEach(id=>{ if(id!==origem) document.getElementById(id).value=val; });
+}
+
+// ─── Reservas ─────────────────────────────────────────────
 async function carregarReservas(renderCal) {
-  const ano = document.getElementById('filtro-ano').value;
+  const ano = document.getElementById('cal-ano').value;
   const r = await fetch(`/api/reservas?ano=${ano}`);
   reservasCache = await r.json();
   verificarPendentes(reservasCache);
-  // tab ativa decide o que atualizar
   const tabAtiva = document.querySelector('.tab.active')?.textContent.trim();
-  if(tabAtiva === 'Calendário' || renderCal) {
-    renderCalendario();
-  } else {
-    filtrarTabela();
-  }
+  if(tabAtiva==='Calendário' || renderCal) renderCalendario();
+  else filtrarTabela();
 }
 
 function filtrarTabela() {
   const canal = document.getElementById('filtro-canal').value;
   const fin   = document.getElementById('filtro-fin').value;
-  let dados = reservasCache;
+  let dados   = reservasCache;
   if(canal) dados = dados.filter(r=>r.canal===canal);
   if(fin)   dados = dados.filter(r=>r.status_financeiro===fin);
   renderTabela(dados);
@@ -726,27 +562,20 @@ function filtrarTabela() {
 
 function renderTabela(dados) {
   const tbody = document.getElementById('tbody-reservas');
-  if(!dados.length) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:30px;color:#a0aec0">Nenhuma reserva</td></tr>';
-    return;
-  }
-  tbody.innerHTML = dados.map(r => {
+  if(!dados.length) { tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:28px;color:#a0aec0">Nenhuma reserva</td></tr>'; return; }
+  tbody.innerHTML = dados.map(r=>{
     const pend = r.aguardando_detalhes;
-    const diarias = r.diarias || 0;
-    const barW = Math.min(100, diarias * 8);
-    const barClass = (r.canal||'').toLowerCase();
     return `<tr class="${pend?'pend-row':''}">
-      <td style="color:#a0aec0;font-size:0.72rem">${r.numero_reserva||'—'}</td>
-      <td>${pend ? '<span class="pend-nome">⏳ Aguardando</span>' : '<strong>'+esc(r.hospede||'—')+'</strong>'}</td>
+      <td style="color:#a0aec0;font-size:0.7rem">${r.numero_reserva||'—'}</td>
+      <td>${pend?'<span class="pend-nome">⏳ Aguardando</span>':'<strong>'+esc(r.hospede||'—')+'</strong>'}</td>
       <td style="white-space:nowrap">${fmt(r.check_in)}</td>
       <td style="white-space:nowrap">${fmt(r.check_out)}</td>
-      <td style="text-align:center">${diarias||'—'}</td>
-      <td><div class="barra-wrap"><div class="barra ${barClass}" style="width:${barW}px"></div></div></td>
-      <td style="white-space:nowrap">${r.valor_total ? 'R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}) : '—'}</td>
-      <td>${r.adr ? 'R$ '+Number(r.adr).toFixed(0) : '—'}</td>
-      <td><span class="badge b-${(r.canal||'').toLowerCase()}">${r.canal||'—'}</span></td>
+      <td style="text-align:center">${r.diarias||'—'}</td>
+      <td style="white-space:nowrap">${r.valor_total?'R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</td>
+      <td>${r.adr?'R$ '+Number(r.adr).toFixed(0):'—'}</td>
+      <td><span class="badge b-${(r.canal||'').toLowerCase().replace(' ','')}">${r.canal||'—'}</span></td>
       <td><span class="badge ${statusClass(r.status)}">${r.status||'—'}</span></td>
-      <td><span class="badge ${r.status_financeiro==='Paga'?'b-paga':'b-naopaga'}">${r.status_financeiro||'Não Paga'}</span></td>
+      <td><span class="badge ${r.status_financeiro==='Paga'?'b-paga':r.status_financeiro==='Parcial'?'b-parcial':'b-naopaga'}">${r.status_financeiro||'Não Paga'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn-icon" onclick="editarReserva(${r.id})">✏️</button>
         <button class="btn-icon btn-del" onclick="deletarReserva(${r.id})">✕</button>
@@ -755,50 +584,46 @@ function renderTabela(dados) {
   }).join('');
 }
 
-function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmt(d) { if(!d) return '—'; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt(d) { if(!d) return '—'; const[y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
 
-function statusClass(s) {
+function statusClass(s){
   if(!s) return '';
-  if(s.includes('Confirmada')) return 'b-conf';
   if(s==='Check in') return 'b-checkin';
   if(s==='Check out') return 'b-checkout';
-  if(s.includes('sem Pag')) return 'b-sempag';
+  if(s.includes('sem Pag')) return 'b-naopaga';
   if(s.includes('Parcial')) return 'b-parcial';
-  return '';
+  if(s==='Bloqueado'||s==='Manutenção') return 'b-bloqueio';
+  return 'b-conf';
 }
 
 function atualizarKPIs(dados) {
-  const validos = dados.filter(r=>r.status!=='Bloqueado'&&r.valor_total);
+  const validos = dados.filter(r=>r.status!=='Bloqueado'&&r.status!=='Manutenção'&&r.valor_total);
   const diarias = validos.reduce((s,r)=>s+(r.diarias||0),0);
-  const fat = validos.reduce((s,r)=>s+Number(r.valor_total||0),0);
+  const fat     = validos.reduce((s,r)=>s+Number(r.valor_total||0),0);
   const fatReal = validos.reduce((s,r)=>{
-    const com = COMISSOES[r.canal]||0;
-    return s + Number(r.valor_total||0)*(1-com);
+    const com=COMISSOES[r.canal]||0;
+    return s+Number(r.valor_total||0)*(1-com);
   },0);
-  const adr = diarias>0 ? fat/diarias : 0;
-  document.getElementById('k-diarias').textContent = diarias;
-  document.getElementById('k-fat').textContent = 'R$ '+fat.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('k-fat-real').textContent = 'R$ '+fatReal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  document.getElementById('k-adr').textContent = 'R$ '+adr.toFixed(0);
-  document.getElementById('k-occ').textContent = (diarias/365*100).toFixed(1)+'%';
+  const adr=diarias>0?fat/diarias:0;
+  document.getElementById('k-diarias').textContent=diarias;
+  document.getElementById('k-fat').textContent='R$ '+fat.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('k-fat-real').textContent='R$ '+fatReal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('k-adr').textContent='R$ '+adr.toFixed(0);
+  document.getElementById('k-occ').textContent=(diarias/365*100).toFixed(1)+'%';
 }
 
 function verificarPendentes(dados) {
-  const pend = dados.filter(r=>r.aguardando_detalhes);
-  const el = document.getElementById('alerta-pendentes');
-  if(pend.length) {
-    el.className = 'alerta show';
-    document.getElementById('alerta-texto').innerHTML = `⚠️ <strong>${pend.length} reserva(s) aguardando detalhes</strong> — preencha aqui ou responda no Telegram`;
-  } else {
-    el.className = 'alerta';
-  }
+  const pend=dados.filter(r=>r.aguardando_detalhes);
+  const el=document.getElementById('alerta-pendentes');
+  if(pend.length) { el.className='alerta show'; document.getElementById('alerta-texto').innerHTML=`⚠️ <strong>${pend.length} reserva(s) aguardando detalhes</strong> — resolva pelo Telegram ou clique aqui`; }
+  else el.className='alerta';
 }
 
+// ─── Pendências ────────────────────────────────────────────
 function abrirPendentes() {
-  const pend = reservasCache.filter(r=>r.aguardando_detalhes);
-  const lista = document.getElementById('pend-lista');
-  lista.innerHTML = pend.map(r => `
+  const pend=reservasCache.filter(r=>r.aguardando_detalhes);
+  document.getElementById('pend-lista').innerHTML=pend.map(r=>`
     <div class="pend-item" id="pitem-${r.id}">
       <h4>📅 ${fmt(r.check_in)} → ${fmt(r.check_out)} | ${r.canal} | ${r.diarias} diária(s)</h4>
       <div class="pend-form">
@@ -807,127 +632,356 @@ function abrirPendentes() {
         <input type="text" id="po-${r.id}" placeholder="Observações" style="grid-column:1/-1">
       </div>
       <div class="pend-actions">
-        <button class="btn btn-danger btn-gray" style="background:#fed7d7;color:#9b2c2c" onclick="excluirPendente(${r.id})">🗑 Excluir</button>
+        <button class="btn btn-gray" style="background:#fed7d7;color:#9b2c2c" onclick="excluirPendente(${r.id})">🗑 Excluir</button>
         <button class="btn btn-success" onclick="salvarPendente(${r.id})">✅ Salvar</button>
       </div>
-    </div>
-  `).join('') || '<p style="color:#718096;text-align:center;padding:20px">Nenhuma pendência!</p>';
+    </div>`).join('')||'<p style="text-align:center;color:#a0aec0;padding:20px">Sem pendências!</p>';
   document.getElementById('modal-pend').classList.add('open');
 }
 
+function fecharPendentes(){ document.getElementById('modal-pend').classList.remove('open'); }
+
 async function salvarPendente(id) {
-  const hospede = document.getElementById(`pn-${id}`).value.trim();
-  const valor = parseFloat(document.getElementById(`pv-${id}`).value);
-  const obs = document.getElementById(`po-${id}`).value.trim();
-  if(!hospede || !valor) return alert('Preencha nome e valor!');
-  await fetch(`/api/reservas/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({hospede, valor_total: valor, observacoes: obs, aguardando_detalhes: false, status_financeiro: 'Não Paga'})});
+  const hospede=document.getElementById(`pn-${id}`).value.trim();
+  const valor=parseFloat(document.getElementById(`pv-${id}`).value);
+  const obs=document.getElementById(`po-${id}`).value.trim();
+  if(!hospede||!valor) return alert('Preencha nome e valor!');
+  await fetch(`/api/reservas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hospede,valor_total:valor,observacoes:obs,aguardando_detalhes:false,status_financeiro:'Não Paga'})});
   document.getElementById(`pitem-${id}`).remove();
   carregarReservas();
 }
 
-async function excluirPendente(id) {
-  if(!confirm('Excluir esta reserva pendente?')) return;
-  await fetch(`/api/reservas/${id}`, {method:'DELETE'});
+async function excluirPendente(id){
+  if(!confirm('Excluir?')) return;
+  await fetch(`/api/reservas/${id}`,{method:'DELETE'});
   document.getElementById(`pitem-${id}`).remove();
   carregarReservas();
 }
 
-function fecharPendentes() { document.getElementById('modal-pend').classList.remove('open'); }
-
+// ─── Modal reserva ─────────────────────────────────────────
 function abrirModal(dados) {
-  editandoId = dados?.id || null;
-  document.getElementById('modal-titulo').textContent = editandoId ? 'Editar Reserva' : 'Nova Reserva';
-  document.getElementById('f-checkin').value = dados?.check_in||'';
-  document.getElementById('f-checkout').value = dados?.check_out||'';
-  document.getElementById('f-hospede').value = dados?.hospede||'';
-  document.getElementById('f-valor').value = dados?.valor_total||'';
-  document.getElementById('f-numero').value = dados?.numero_reserva||'';
-  document.getElementById('f-canal').value = dados?.canal||'Booking';
-  document.getElementById('f-status').value = dados?.status||'Reserva Confirmada';
-  document.getElementById('f-fin').value = dados?.status_financeiro||'Não Paga';
-  document.getElementById('f-obs').value = dados?.observacoes||'';
+  editandoId=dados?.id||null;
+  document.getElementById('modal-titulo').textContent=editandoId?'Editar Reserva':'Nova Reserva';
+  document.getElementById('f-checkin').value=dados?.check_in||'';
+  document.getElementById('f-checkout').value=dados?.check_out||'';
+  document.getElementById('f-hospede').value=dados?.hospede||'';
+  document.getElementById('f-valor').value=dados?.valor_total||'';
+  document.getElementById('f-numero').value=dados?.numero_reserva||'';
+  document.getElementById('f-canal').value=dados?.canal||'Booking';
+  document.getElementById('f-status').value=dados?.status||'Reserva Confirmada';
+  document.getElementById('f-fin').value=dados?.status_financeiro||'Não Paga';
+  document.getElementById('f-obs').value=dados?.observacoes||'';
   document.getElementById('modal').classList.add('open');
 }
 
-function fecharModal() { document.getElementById('modal').classList.remove('open'); }
+function fecharModal(){ document.getElementById('modal').classList.remove('open'); }
 
-function editarReserva(id) {
-  const r = reservasCache.find(x=>x.id===id);
-  if(r) abrirModal(r);
+function editarReserva(id){ const r=reservasCache.find(x=>x.id===id); if(r) abrirModal(r); }
+
+function onCanalChange(val){
+  const isBloq=val==='Bloqueio'||val==='Manutenção';
+  if(isBloq){
+    document.getElementById('f-status').value=val==='Manutenção'?'Manutenção':'Bloqueado';
+    document.getElementById('f-fin').value='Paga';
+    if(!document.getElementById('f-hospede').value) document.getElementById('f-hospede').value=val;
+  }
 }
 
-async function salvarReserva() {
-  const canal = document.getElementById('f-canal').value;
-  const payload = {
-    check_in: document.getElementById('f-checkin').value,
-    check_out: document.getElementById('f-checkout').value,
-    hospede: document.getElementById('f-hospede').value,
-    valor_total: parseFloat(document.getElementById('f-valor').value)||null,
-    numero_reserva: document.getElementById('f-numero').value,
+async function salvarReserva(){
+  const canal=document.getElementById('f-canal').value;
+  const payload={
+    check_in:   document.getElementById('f-checkin').value,
+    check_out:  document.getElementById('f-checkout').value,
+    hospede:    document.getElementById('f-hospede').value,
+    valor_total:parseFloat(document.getElementById('f-valor').value)||null,
+    numero_reserva:document.getElementById('f-numero').value,
     canal,
-    status: canal === 'Bloqueio' ? 'Bloqueado' : document.getElementById('f-status').value,
-    status_financeiro: document.getElementById('f-fin').value,
-    observacoes: document.getElementById('f-obs').value,
-    aguardando_detalhes: false,
+    status: (canal==='Bloqueio'?'Bloqueado':canal==='Manutenção'?'Manutenção':document.getElementById('f-status').value),
+    status_financeiro:document.getElementById('f-fin').value,
+    observacoes:document.getElementById('f-obs').value,
+    aguardando_detalhes:false,
   };
   if(!payload.check_in||!payload.check_out) return alert('Preencha check-in e check-out');
-  const url = editandoId ? `/api/reservas/${editandoId}` : '/api/reservas';
-  const method = editandoId ? 'PUT' : 'POST';
-  await fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  const url=editandoId?`/api/reservas/${editandoId}`:'/api/reservas';
+  const method=editandoId?'PUT':'POST';
+  await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   fecharModal();
-  carregarReservas();
+  carregarReservas(true);
 }
 
-async function deletarReserva(id) {
+async function deletarReserva(id){
   if(!confirm('Confirma exclusão?')) return;
-  await fetch(`/api/reservas/${id}`, {method:'DELETE'});
-  carregarReservas();
+  await fetch(`/api/reservas/${id}`,{method:'DELETE'});
+  carregarReservas(true);
 }
 
-async function rodarAgente() {
-  event.target.textContent='⏳...'; event.target.disabled=true;
-  try {
-    const r = await fetch('/api/agent/run', {method:'POST'});
-    const d = await r.json();
-    alert(d.msg||'Concluído');
-    carregarReservas();
-  } finally { event.target.textContent='🔄 Verificar iCal'; event.target.disabled=false; }
+async function rodarAgente(){
+  const btn=event.target; btn.textContent='⏳...'; btn.disabled=true;
+  try{ const r=await fetch('/api/agent/run',{method:'POST'}); const d=await r.json(); alert(d.msg||'Concluído'); carregarReservas(true); }
+  finally{ btn.textContent='🔄 Verificar iCal'; btn.disabled=false; }
 }
 
-async function carregarRelatorio() {
-  const ano = document.getElementById('rel-ano').value;
-  const r = await fetch(`/api/relatorios/mensal?ano=${ano}`);
-  const dados = await r.json();
-  const body = document.getElementById('rel-body');
-  let totDiarias=0,totFat=0,totReal=0,totRes=0;
-  body.innerHTML = dados.map(m => {
+// ─── Calendário ────────────────────────────────────────────
+function getCorBarra(r) {
+  const status=r.status||'';
+  const fin=r.status_financeiro||'Não Paga';
+  if(r.canal==='Bloqueio'||status==='Bloqueado') return {fill:'bloqueio',bord:null};
+  if(r.canal==='Manutenção'||status==='Manutenção') return {fill:'manutencao',bord:null};
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const ci=new Date(r.check_in+'T00:00:00');
+  const finClass=fin==='Paga'?'paga':fin==='Parcial'||status.includes('Parcial')?'parcial':'naopaga';
+  const bordClass='bord-'+finClass;
+  if(ci>=hoje) return {fill:finClass,bord:null};
+  let fillClass='confirmada';
+  if(status==='Check in')           fillClass='checkin';
+  else if(status==='Check out')     fillClass='checkout';
+  else if(status==='No Show')       fillClass='noshow';
+  else if(status.includes('sem Pag'))fillClass='naopaga';
+  else if(status.includes('Parcial'))fillClass='parcial';
+  return {fill:fillClass,bord:bordClass};
+}
+
+function renderCalendario() {
+  const ano       = parseInt(document.getElementById('cal-ano').value);
+  const mesFiltro = parseInt(document.getElementById('cal-mes').value||'0');
+  const stFiltro  = document.getElementById('cal-status').value||'';
+  const diasMes   = [31,28,31,30,31,30,31,31,30,31,30,31];
+  const CELL      = 32;
+  const hoje      = new Date(); hoje.setHours(0,0,0,0);
+  const feriados  = getFeriados(ano);
+
+  const reservasAno = reservasCache.filter(r=>{
+    if(!r.check_in||!r.check_out) return false;
+    const tocaAno=r.check_in.slice(0,4)==String(ano)||r.check_out.slice(0,4)==String(ano)||
+      (r.check_in.slice(0,4)<String(ano)&&r.check_out.slice(0,4)>String(ano));
+    if(!tocaAno) return false;
+    if(mesFiltro){ if(parseInt(r.check_in.slice(5,7))!==mesFiltro) return false; }
+    if(stFiltro&&r.status!==stFiltro) return false;
+    return true;
+  });
+
+  atualizarKPIs(reservasAno);
+
+  const table=document.getElementById('cal-table');
+  table.innerHTML='';
+
+  // cabeçalho
+  const thead=document.createElement('thead');
+  let thHTML='<tr><th class="mes-col"></th>';
+  for(let d=1;d<=31;d++) thHTML+=`<th>${d}</th>`;
+  thHTML+='</tr>';
+  thead.innerHTML=thHTML;
+  table.appendChild(thead);
+
+  const tbody=document.createElement('tbody');
+  const mesesRender=mesFiltro?[mesFiltro-1]:[...Array(12).keys()];
+
+  mesesRender.forEach(mi=>{
+    const mes=mi+1;
+    const totalDias=diasMes[mi];
+    const mesStr=String(mes).padStart(2,'0');
+    const inicioMes=new Date(ano,mi,1,12);
+    const fimMes=new Date(ano,mi,totalDias,12);
+    // DOW do dia 1
+    const dow1=new Date(ano,mi,1).getDay(); // 0=Dom
+
+    const resDoMes=reservasAno.filter(r=>{
+      const ci=new Date(r.check_in+'T12:00:00');
+      const co=new Date(r.check_out+'T12:00:00');
+      return ci<=fimMes&&co>inicioMes;
+    });
+
+    const tr=document.createElement('tr');
+    let tdHTML=`<td class="mes-label">${MESES[mi].slice(0,3).toUpperCase()}</td>`;
+    for(let d=1;d<=31;d++){
+      if(d>totalDias){ tdHTML+='<td class="fora"></td>'; continue; }
+      const dow=(dow1+d-1)%7;
+      const isWeekend=dow===0||dow===6;
+      const dataKey=`${ano}-${mesStr}-${String(d).padStart(2,'0')}`;
+      const isHoje=dataKey===hoje.toISOString().slice(0,10);
+      const isFeriado=feriados.has(dataKey);
+      let cls='livre';
+      if(isFeriado) cls='feriado';
+      else if(isWeekend) cls='weekend';
+      if(isHoje) cls+=' hoje-col';
+      const dowLabel=DIAS_SM[dow];
+      const dowCls=isFeriado?'dow-feriado':isWeekend?'dow-weekend':'';
+      tdHTML+=`<td class="${cls}" style="position:relative"><span class="cal-dow ${dowCls}">${dowLabel}</span></td>`;
+    }
+    tr.innerHTML=tdHTML;
+    tr.className='cal-barra-row';
+    tbody.appendChild(tr);
+
+    resDoMes.forEach(r=>{
+      const ci=new Date(r.check_in+'T12:00:00');
+      const co=new Date(r.check_out+'T12:00:00');
+      const clampedStart=ci<inicioMes;
+      const clampedEnd=co>fimMes;
+      const diaInicio=clampedStart?1:ci.getDate();
+      const diaFim=clampedEnd?totalDias:co.getDate();
+      const absLeft=(diaInicio-1)*CELL+(clampedStart?0:CELL/2);
+      const absRight=(diaFim-1)*CELL+(clampedEnd?CELL:CELL/2);
+      const largura=Math.max(absRight-absLeft,6);
+      const left=clampedStart?0:CELL/2;
+      const {fill,bord}=getCorBarra(r);
+      const label=r.hospede||(r.canal==='Bloqueio'?'Bloqueado':r.canal==='Manutenção'?'Manutenção':r.canal)||'';
+      const tds=tr.querySelectorAll('td');
+      const tdAncora=tds[diaInicio]; // tds[0]=mes-label, tds[1]=dia1 ... tds[N]=diaN
+      if(!tdAncora) return;
+      tdAncora.style.overflow='visible';
+      const barra=document.createElement('div');
+      barra.className=`cal-barra ${fill}${bord?' '+bord:''}`;
+      barra.style.cssText=`left:${left}px;width:${largura}px;`;
+      const span=document.createElement('span');
+      span.className='cal-barra-label';
+      span.textContent=label;
+      const tip=document.createElement('div');
+      tip.className='cal-tip';
+      tip.innerHTML=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
+      barra.appendChild(span);
+      barra.appendChild(tip);
+      tdAncora.appendChild(barra);
+    });
+  });
+
+  table.appendChild(tbody);
+}
+
+// ─── Relatório ─────────────────────────────────────────────
+async function carregarRelatorio(){
+  const ano=document.getElementById('rel-ano').value;
+  const r=await fetch(`/api/relatorios/mensal?ano=${ano}`);
+  const dados=await r.json();
+  let totD=0,totF=0,totR=0,totRes=0;
+  const body=document.getElementById('rel-body');
+  body.innerHTML=dados.map(m=>{
     if(!m.diarias) return '';
-    totDiarias+=m.diarias; totFat+=m.faturamento; totReal+=m.faturamento_real; totRes+=m.reservas;
-    const com = m.faturamento - m.faturamento_real;
-    return `<tr>
-      <td>${MESES[m.mes-1]}</td>
-      <td>${m.reservas}</td>
-      <td>${m.diarias}</td>
+    totD+=m.diarias; totF+=m.faturamento; totR+=m.faturamento_real; totRes+=m.reservas;
+    const com=m.faturamento-m.faturamento_real;
+    return `<tr><td>${MESES[m.mes-1]}</td><td>${m.reservas}</td><td>${m.diarias}</td>
       <td>R$ ${Number(m.faturamento).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
       <td style="color:#c53030">R$ ${com.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
       <td style="color:#276749;font-weight:600">R$ ${Number(m.faturamento_real).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
       <td>R$ ${m.adr?Number(m.adr).toFixed(0):'—'}</td>
-      <td>${(m.occ*100).toFixed(1)}%</td>
-    </tr>`;
+      <td>${(m.occ*100).toFixed(1)}%</td></tr>`;
   }).join('');
-  const com = totFat - totReal;
-  document.getElementById('rel-foot').innerHTML = `<tr>
-    <td>TOTAL</td><td>${totRes}</td><td>${totDiarias}</td>
-    <td>R$ ${totFat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    <td style="color:#c53030">R$ ${com.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    <td style="color:#276749">R$ ${totReal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    <td>—</td><td>—</td>
-  </tr>`;
+  const com2=totF-totR;
+  document.getElementById('rel-foot').innerHTML=`<tr><td>TOTAL</td><td>${totRes}</td><td>${totD}</td>
+    <td>R$ ${totF.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    <td style="color:#c53030">R$ ${com2.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    <td style="color:#276749">R$ ${totR.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    <td>—</td><td>—</td></tr>`;
 }
 
-[document.getElementById('modal'), document.getElementById('modal-pend')].forEach(m => {
-  m.addEventListener('click', e => { if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+// ─── Config ─────────────────────────────────────────────────
+async function salvarCorte(){
+  const val=document.getElementById('data-corte').value;
+  if(!val) return;
+  await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data_corte_vendas:val})});
+  const fim=new Date(new Date(val).getTime()+730*86400000).toLocaleDateString('pt-BR');
+  alert('Salvo! Bloqueio criado até '+fim);
+  carregarReservas(true);
+}
+
+// ─── Usuários ──────────────────────────────────────────────
+async function carregarUsuarios(){
+  const r=await fetch('/api/admin/usuarios');
+  if(!r.ok) return;
+  _usersData=await r.json();
+  const tbody=document.getElementById('admin-tbody');
+  tbody.innerHTML=_usersData.map(u=>`<tr>
+    <td><strong>${esc(u.nome)}</strong>${u.primeiro_acesso?'<span style="font-size:0.68rem;color:#d97706;margin-left:6px">⚠️ 1º acesso</span>':''}</td>
+    <td>${esc(u.email)}</td>
+    <td><span class="papel-badge papel-${u.papel}">${u.papel}</span></td>
+    <td style="font-size:0.72rem;color:#718096">${u.papel==='admin'?'Tudo':Object.entries(u.permissoes||{}).filter(([,v])=>v).map(([k])=>k).join(', ')||'—'}</td>
+    <td>${u.ativo?'✅':'❌'}</td>
+    <td>
+      <button class="btn-icon" onclick="editarUsuario(${u.id})">✏️</button>
+      <button class="btn-icon" onclick="resetSenha(${u.id},'${esc(u.nome)}')" title="Resetar senha">🔑</button>
+      <button class="btn-icon btn-del" onclick="deletarUsuario(${u.id},'${esc(u.nome)}')">✕</button>
+    </td>
+  </tr>`).join('');
+}
+
+function abrirNovoUsuario(){
+  editandoUserId=null;
+  document.getElementById('usuario-titulo').textContent='Novo Usuário';
+  document.getElementById('u-nome').value='';
+  document.getElementById('u-email').value='';
+  document.getElementById('u-senha').value='';
+  document.getElementById('u-papel').value='visitante';
+  document.getElementById('u-senha-hint').style.display='none';
+  document.getElementById('u-ativo-wrap').style.display='none';
+  TELAS.forEach(t=>{ const el=document.getElementById('p-'+t); if(el) el.checked=false; });
+  onPapelChange();
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function editarUsuario(id){
+  const u=_usersData.find(x=>x.id===id);
+  if(!u) return;
+  editandoUserId=id;
+  document.getElementById('usuario-titulo').textContent='Editar Usuário';
+  document.getElementById('u-nome').value=u.nome;
+  document.getElementById('u-email').value=u.email;
+  document.getElementById('u-senha').value='';
+  document.getElementById('u-papel').value=u.papel;
+  document.getElementById('u-senha-hint').style.display='';
+  document.getElementById('u-ativo-wrap').style.display='';
+  document.getElementById('u-ativo').checked=u.ativo;
+  TELAS.forEach(t=>{ const el=document.getElementById('p-'+t); if(el) el.checked=!!(u.permissoes||{})[t]; });
+  onPapelChange();
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function fecharUsuario(){ document.getElementById('modal-usuario').classList.remove('open'); }
+
+function onPapelChange(){
+  const isAdmin=document.getElementById('u-papel').value==='admin';
+  document.getElementById('u-perms-wrap').style.opacity=isAdmin?'0.4':'1';
+  document.getElementById('u-perms-wrap').style.pointerEvents=isAdmin?'none':'';
+}
+
+async function salvarUsuario(){
+  const perms={};
+  TELAS.forEach(t=>{ const el=document.getElementById('p-'+t); if(el) perms[t]=el.checked; });
+  const payload={
+    nome:   document.getElementById('u-nome').value.trim(),
+    email:  document.getElementById('u-email').value.trim(),
+    senha:  document.getElementById('u-senha').value,
+    papel:  document.getElementById('u-papel').value,
+    permissoes: perms,
+    ativo:  document.getElementById('u-ativo')?.checked ?? true,
+  };
+  if(!payload.nome||!payload.email) return alert('Nome e e-mail obrigatórios');
+  if(!editandoUserId&&!payload.senha) return alert('Senha obrigatória para novo usuário');
+  const url=editandoUserId?`/api/admin/usuarios/${editandoUserId}`:'/api/admin/usuarios';
+  const method=editandoUserId?'PUT':'POST';
+  const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok){ const d=await r.json(); return alert(d.error||'Erro ao salvar'); }
+  fecharUsuario();
+  carregarUsuarios();
+}
+
+async function resetSenha(id, nome){
+  const nova=prompt(`Nova senha para ${nome} (mín. 6 caracteres):`);
+  if(!nova) return;
+  if(nova.length<6) return alert('Senha muito curta');
+  const r=await fetch(`/api/admin/usuarios/${id}/reset-senha`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nova_senha:nova})});
+  const d=await r.json();
+  if(r.ok) alert('Senha redefinida! O usuário precisará trocá-la no próximo acesso.');
+  else alert(d.error||'Erro');
+}
+
+async function deletarUsuario(id, nome){
+  if(!confirm(`Excluir ${nome}?`)) return;
+  await fetch(`/api/admin/usuarios/${id}`,{method:'DELETE'});
+  carregarUsuarios();
+}
+
+// Fecha modais ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 });
 
 iniciarSessao();
