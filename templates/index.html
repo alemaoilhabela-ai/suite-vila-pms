@@ -202,7 +202,9 @@ table.res tr:hover td { background: #f7fafc; }
       <div class="card-header">
         <h2>Calendário de Ocupação</h2>
         <div class="card-actions">
+          <button class="btn btn-gray" onclick="mudarAno(-1)">◀ Anterior</button>
           <select id="cal-ano" onchange="sincronizarAno('cal-ano'); carregarReservas(true)"></select>
+          <button class="btn btn-gray" onclick="mudarAno(+1)">Próximo ▶</button>
           <select id="cal-mes" onchange="renderCalendario()">
             <option value="0">Todos os meses</option>
             <option value="1">Janeiro</option><option value="2">Fevereiro</option>
@@ -532,6 +534,16 @@ function showSubTab(sub, btn) {
   });
   if(sub==='relatorio') carregarRelatorio();
   if(sub==='usuarios')  carregarUsuarios();
+}
+
+function mudarAno(delta) {
+  const sel = document.getElementById('cal-ano');
+  const novo = parseInt(sel.value) + delta;
+  if([...sel.options].some(o=>parseInt(o.value)===novo)) {
+    sel.value = novo;
+    sincronizarAno('cal-ano');
+    carregarReservas(true);
+  }
 }
 
 function sincronizarAno(origem) {
