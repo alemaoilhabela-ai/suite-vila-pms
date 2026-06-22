@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Suite Vila — PMS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a202c; }
@@ -123,16 +124,20 @@ tr:hover td { background: #f7fafc; }
 .cal-barra-row td.fora { background: #fafafa !important; }
 .cal-barra { position: absolute; top: 4px; bottom: 4px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; font-size: 0.65rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .cal-barra:hover { opacity: 0.85; z-index: 10; }
-/* cores por status/financeiro */
-.cal-barra.checkin   { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
-.cal-barra.checkout  { background: linear-gradient(90deg,#4a5568,#718096); }
-.cal-barra.confirmada{ background: linear-gradient(90deg,#276749,#38a169); }
-.cal-barra.noshow    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
-.cal-barra.sempag    { background: linear-gradient(90deg,#9b2c2c,#c53030); }
-.cal-barra.parcial   { background: linear-gradient(90deg,#b7791f,#d69e2e); }
-.cal-barra.bloqueio  { background: linear-gradient(90deg,#1a202c,#2d3748); }
-.cal-barra.paga      { background: linear-gradient(90deg,#276749,#48bb78); }
-.cal-barra.naopaga   { background: linear-gradient(90deg,#c05621,#ed8936); }
+/* cores por status */
+.cal-barra.checkin    { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
+.cal-barra.checkout   { background: linear-gradient(90deg,#a0aec0,#cbd5e0); color:#4a5568; }
+.cal-barra.confirmada { background: linear-gradient(90deg,#2c5282,#3182ce); }
+.cal-barra.noshow     { background: linear-gradient(90deg,#702459,#b83280); }
+.cal-barra.bloqueio   { background: linear-gradient(90deg,#1a202c,#2d3748); }
+/* cores por financeiro — futuro=fill / passado=outline */
+.cal-barra.paga       { background: linear-gradient(90deg,#276749,#38a169); }
+.cal-barra.naopaga    { background: linear-gradient(90deg,#9b2c2c,#e53e3e); }
+.cal-barra.parcial    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+/* bordas financeiro para passado */
+.cal-barra.bord-paga    { outline: 3px solid #38a169; outline-offset: -2px; }
+.cal-barra.bord-naopaga { outline: 3px solid #e53e3e; outline-offset: -2px; }
+.cal-barra.bord-parcial { outline: 3px solid #d69e2e; outline-offset: -2px; }
 </style>
 </head>
 <body>
@@ -164,13 +169,13 @@ tr:hover td { background: #f7fafc; }
   </div>
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('reservas',this)">Reservas</button>
-    <button class="tab" onclick="showTab('calendario',this)">Calendário</button>
+    <button class="tab" onclick="showTab('reservas',this)">Reservas</button>
+    <button class="tab active" onclick="showTab('calendario',this)">Calendário</button>
     <button class="tab" onclick="showTab('relatorio',this)">Relatório Mensal</button>
   </div>
 
   <!-- Reservas -->
-  <div id="tab-reservas">
+  <div id="tab-reservas" style="display:none">
     <div class="card">
       <div class="card-header">
         <h2>Mapa de Reservas</h2>
@@ -204,11 +209,29 @@ tr:hover td { background: #f7fafc; }
   </div>
 
   <!-- Calendário -->
-  <div id="tab-calendario" style="display:none">
+  <div id="tab-calendario">
     <div class="card">
       <div class="card-header">
         <h2>Calendário de Ocupação</h2>
-        <select id="cal-ano" onchange="renderCalendario()"></select>
+        <div class="card-actions">
+          <select id="cal-ano" onchange="renderCalendario()"></select>
+          <select id="cal-mes" onchange="renderCalendario()">
+            <option value="0">Todos os meses</option>
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5">Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select id="cal-status" onchange="renderCalendario()">
+            <option value="">Todos os status</option>
+            <option>Check in</option><option>Check out</option>
+            <option>Reserva Confirmada</option><option>Bloqueado</option>
+            <option>No Show</option><option>Reserva sem Pag.</option>
+            <option>Reserva com Pag. Parcial</option>
+          </select>
+        </div>
       </div>
       <div style="padding:16px">
         <div class="cal-legenda">
@@ -332,45 +355,62 @@ async function salvarCorte() {
 function showTab(tab, btn) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-reservas').style.display = tab==='reservas' ? '' : 'none';
-  document.getElementById('tab-calendario').style.display = tab==='calendario' ? '' : 'none';
-  document.getElementById('tab-relatorio').style.display = tab==='relatorio' ? '' : 'none';
-  if(tab==='relatorio') carregarRelatorio();
+  document.getElementById('tab-reservas').style.display    = tab==='reservas'   ? '' : 'none';
+  document.getElementById('tab-calendario').style.display  = tab==='calendario' ? '' : 'none';
+  document.getElementById('tab-relatorio').style.display   = tab==='relatorio'  ? '' : 'none';
+  if(tab==='relatorio')  carregarRelatorio();
   if(tab==='calendario') renderCalendario();
+  if(tab==='reservas')   { filtrarTabela(); }
 }
 
 function getCorBarra(r) {
   const status = r.status || '';
-  // bloqueado sempre é bloqueado
-  if(r.canal === 'Bloqueio' || status === 'Bloqueado') return 'bloqueio';
+  const fin    = r.status_financeiro || 'Não Paga';
+
+  if(r.canal === 'Bloqueio' || status === 'Bloqueado') return {fill:'bloqueio', bord:null};
 
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const ci = new Date(r.check_in + 'T00:00:00');
-  const co = new Date(r.check_out + 'T00:00:00');
+  const ci = new Date(r.check_in  + 'T00:00:00');
 
-  // passado ou presente → usa status da reserva
-  if(co <= hoje || ci <= hoje) {
-    if(status === 'Check in')  return 'checkin';
-    if(status === 'Check out') return 'checkout';
-    if(status === 'No Show')   return 'noshow';
-    if(status.includes('sem Pag')) return 'sempag';
-    if(status.includes('Parcial')) return 'parcial';
-    return 'confirmada';
+  const finClass = fin === 'Paga' ? 'paga' : (fin === 'Parcial' || status.includes('Parcial') ? 'parcial' : 'naopaga');
+  const bordClass = 'bord-' + finClass;
+
+  if(ci >= hoje) {
+    // futuro: fill = financeiro (paga=verde, naopaga=vermelho, parcial=amarelo), sem borda
+    return {fill: finClass, bord: null};
   }
-  // futuro → usa status financeiro
-  return r.status_financeiro === 'Paga' ? 'paga' : 'naopaga';
+  // passado/presente: fill = status, borda = financeiro
+  let fillClass = 'confirmada';
+  if(status === 'Check in')          fillClass = 'checkin';
+  else if(status === 'Check out')    fillClass = 'checkout';
+  else if(status === 'No Show')      fillClass = 'noshow';
+  else if(status.includes('sem Pag'))fillClass = 'naopaga';
+  else if(status.includes('Parcial'))fillClass = 'parcial';
+  return {fill: fillClass, bord: bordClass};
 }
 
 function renderCalendario() {
-  const ano = parseInt(document.getElementById('cal-ano').value);
-  const diasMes = [31,28,31,30,31,30,31,31,30,31,30,31];
-  const CELL = 32; // px por célula de dia
+  const ano       = parseInt(document.getElementById('cal-ano').value);
+  const mesFiltro = parseInt(document.getElementById('cal-mes').value || '0');
+  const stFiltro  = document.getElementById('cal-status').value || '';
+  const diasMes   = [31,28,31,30,31,30,31,31,30,31,30,31];
+  const CELL      = 32; // px por célula de dia
 
-  // filtra reservas do ano
+  // filtra reservas do ano (e opcionalmente mês e status)
   const reservasAno = reservasCache.filter(r => {
     if(!r.check_in || !r.check_out) return false;
-    return r.check_in.startsWith(ano) || r.check_out.startsWith(ano);
+    const tocaAno = r.check_in.startsWith(ano) || r.check_out.startsWith(ano);
+    if(!tocaAno) return false;
+    if(mesFiltro) {
+      const mes = parseInt(r.check_in.slice(5,7));
+      if(mes !== mesFiltro) return false;
+    }
+    if(stFiltro && r.status !== stFiltro) return false;
+    return true;
   });
+
+  // KPIs ao vivo com as reservas filtradas
+  atualizarKPIs(reservasAno);
 
   const table = document.getElementById('cal-table');
   table.innerHTML = '';
@@ -427,17 +467,16 @@ function renderCalendario() {
       const left    = CELL / 2;
       const largura = Math.max((diaFim - diaInicio) * CELL, 6);
 
-      const classCor = getCorBarra(r);
+      const {fill, bord} = getCorBarra(r);
       const label = r.hospede || (r.canal==='Bloqueio' ? 'Bloqueado' : r.canal) || '';
 
       const tds = trFundo.querySelectorAll('td');
-      // tds[0] = mes-label, tds[1] = dia 1, tds[N] = dia N
-      const tdAncora = tds[diaInicio];
+      const tdAncora = tds[diaInicio]; // tds[0]=mes-label, tds[N]=dia N
       if(!tdAncora) return;
 
       tdAncora.style.overflow = 'visible';
       const barra = document.createElement('div');
-      barra.className = `cal-barra ${classCor}`;
+      barra.className = `cal-barra ${fill}${bord ? ' '+bord : ''}`;
       barra.style.cssText = `left:${left}px; width:${largura}px;`;
       barra.title = `${label} | ${fmt(r.check_in)} → ${fmt(r.check_out)} | ${r.diarias||'?'} diárias${r.valor_total?' | R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
       barra.textContent = label;
@@ -448,22 +487,28 @@ function renderCalendario() {
   table.appendChild(tbody);
 }
 
-async function carregarReservas() {
+async function carregarReservas(renderCal) {
   const ano = document.getElementById('filtro-ano').value;
   const r = await fetch(`/api/reservas?ano=${ano}`);
   reservasCache = await r.json();
-  filtrarTabela();
-  atualizarKPIs(reservasCache);
   verificarPendentes(reservasCache);
+  // tab ativa decide o que atualizar
+  const tabAtiva = document.querySelector('.tab.active')?.textContent.trim();
+  if(tabAtiva === 'Calendário' || renderCal) {
+    renderCalendario();
+  } else {
+    filtrarTabela();
+  }
 }
 
 function filtrarTabela() {
   const canal = document.getElementById('filtro-canal').value;
-  const fin = document.getElementById('filtro-fin').value;
+  const fin   = document.getElementById('filtro-fin').value;
   let dados = reservasCache;
   if(canal) dados = dados.filter(r=>r.canal===canal);
-  if(fin) dados = dados.filter(r=>r.status_financeiro===fin);
+  if(fin)   dados = dados.filter(r=>r.status_financeiro===fin);
   renderTabela(dados);
+  atualizarKPIs(dados);
 }
 
 function renderTabela(dados) {
@@ -671,7 +716,7 @@ async function carregarRelatorio() {
   m.addEventListener('click', e => { if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 });
 
-carregarReservas();
+carregarReservas(true);
 </script>
 </body>
 </html>
