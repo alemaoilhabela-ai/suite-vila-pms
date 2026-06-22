@@ -823,13 +823,13 @@ function renderJanela() {
   tr.appendChild(tdLabel);
 
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const feriados = getFeriados(janelaInicio.getFullYear()).concat(getFeriados(fim.getFullYear()));
-  const ferSet = new Set(feriados.map(f=>f.toDateString()));
+  const ferSet = new Set([...getFeriados(janelaInicio.getFullYear()), ...getFeriados(fim.getFullYear())]);
 
   for(let i=0;i<DIAS;i++){
     const d = new Date(janelaInicio.getTime()+i*86400000);
     const isWE = d.getDay()===0||d.getDay()===6;
-    const isFer = ferSet.has(d.toDateString());
+    const dStr2 = d2 => d2.toISOString().slice(0,10);
+    const isFer = ferSet.has(dStr2(d));
     const isHoje = d.toDateString()===hoje.toDateString();
     let cls = 'cal-td';
     if(isFer) cls+=' feriado'; else if(isWE) cls+=' weekend';
