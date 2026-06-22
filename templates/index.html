@@ -123,7 +123,11 @@ tr:hover td { background: #f7fafc; }
 .cal-barra-row td { background: white !important; height: 36px; padding: 3px 0; }
 .cal-barra-row td.fora { background: #fafafa !important; }
 .cal-barra { position: absolute; top: 4px; bottom: 4px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; font-size: 0.65rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
-.cal-barra:hover { opacity: 0.85; z-index: 10; }
+.cal-barra:hover { opacity: 0.9; z-index: 20; }
+.cal-barra:hover .cal-tip { display: block; }
+.cal-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 7px; padding: 6px 10px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 50; pointer-events: none; line-height: 1.5; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.cal-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
+.cal-tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a202c; }
 /* cores por status */
 .cal-barra.checkin    { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
 .cal-barra.checkout   { background: linear-gradient(90deg,#a0aec0,#cbd5e0); color:#4a5568; }
@@ -503,8 +507,11 @@ function renderCalendario() {
       const barra = document.createElement('div');
       barra.className = `cal-barra ${fill}${bord ? ' '+bord : ''}`;
       barra.style.cssText = `left:${left}px; width:${largura}px;`;
-      barra.title = `${label} | ${fmt(r.check_in)} → ${fmt(r.check_out)} | ${r.diarias||'?'} diárias${r.valor_total?' | R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
+      const tip = document.createElement('div');
+      tip.className = 'cal-tip';
+      tip.innerHTML = `<strong>${label||r.canal}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
       barra.textContent = label;
+      barra.appendChild(tip);
       tdAncora.appendChild(barra);
     });
   });

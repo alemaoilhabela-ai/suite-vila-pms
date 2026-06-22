@@ -13,7 +13,8 @@ def index():
 def listar_reservas():
     db = get_client()
     ano = request.args.get("ano", date.today().year)
-    res = db.table("reservas").select("*").gte("check_in", f"{ano}-01-01").lte("check_in", f"{ano}-12-31").order("check_in", desc=True).execute()
+    # inclui qualquer reserva que CRUZA o ano (não apenas as que começam nele)
+    res = db.table("reservas").select("*").lte("check_in", f"{ano}-12-31").gte("check_out", f"{ano}-01-01").order("check_in", desc=True).execute()
     return jsonify(res.data)
 
 @bp.get("/api/config")
