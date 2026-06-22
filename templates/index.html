@@ -99,10 +99,10 @@ table.res tr:hover td { background: #f7fafc; }
 .cal-barra:hover { opacity: 0.88; z-index: 20; }
 .cal-barra:hover .cal-tip, .cal-barra.pinned .cal-tip { display: block; }
 .cal-barra-label { font-size: 0.62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; pointer-events: none; }
-.cal-tip { display: none; position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 8px; padding: 7px 11px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 100; pointer-events: none; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.cal-tip { display: none; position: absolute; top: calc(100% + 7px); left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 8px; padding: 7px 11px; font-size: 0.7rem; font-weight: 400; white-space: nowrap; z-index: 100; pointer-events: none; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .cal-barra.pinned .cal-tip { pointer-events: auto; }
 .cal-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
-.cal-tip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a202c; }
+.cal-tip::before { content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-bottom-color:#1a202c; }
 .cal-tip-editar { display: block; margin-top: 6px; padding: 3px 10px; background: #3182ce; border-radius: 5px; text-align: center; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: white; }
 .cal-tip-editar:hover { background: #2b6cb0; }
 
