@@ -105,30 +105,30 @@ tr:hover td { background: #f7fafc; }
 .rel-table tr:hover td { background: #f7fafc; }
 .rel-table tfoot td { font-weight: 700; background: #edf2f7; border-top: 2px solid #e2e8f0; }
 
-/* Calendário */
-.cal-grid { overflow-x: auto; }
-.cal-month { margin-bottom: 18px; }
-.cal-month-name { font-size: 0.8rem; font-weight: 700; color: #4a5568; width: 72px; min-width: 72px; padding-right: 10px; padding-top: 3px; }
-.cal-row { display: flex; align-items: stretch; }
-.cal-days { display: flex; gap: 2px; flex: 1; }
-.cal-day { width: 24px; min-width: 24px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #a0aec0; background: #f0f4f8; position: relative; cursor: default; }
-.cal-day.ocupado { color: white; font-weight: 700; }
-.cal-day.booking  { background: #3182ce; }
-.cal-day.airbnb   { background: #e53e3e; }
-.cal-day.direta   { background: #38a169; }
-.cal-day.vrbo     { background: #805ad5; }
-.cal-day.bloqueio { background: #4a5568; }
-.cal-day.noshow   { background: #d69e2e; }
-.cal-day.vazio    { background: #f0f4f8; }
-.cal-day.fora-mes { background: transparent; }
-.cal-day:hover .cal-tooltip { display: block; }
-.cal-tooltip { display: none; position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1a202c; color: white; border-radius: 6px; padding: 5px 8px; font-size: 0.68rem; white-space: nowrap; z-index: 50; pointer-events: none; }
-.cal-tooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a202c; }
-.cal-header-days { display: flex; gap: 2px; margin-bottom: 4px; margin-left: 82px; }
-.cal-header-day { width: 24px; min-width: 24px; text-align: center; font-size: 0.58rem; color: #a0aec0; font-weight: 700; }
+/* Calendário Gantt */
+.cal-wrap { overflow-x: auto; min-width: 0; }
 .cal-legenda { display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
 .cal-legenda-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #4a5568; }
 .cal-legenda-cor { width: 14px; height: 14px; border-radius: 3px; }
+.cal-table { border-collapse: collapse; width: 100%; min-width: 700px; }
+.cal-table th { font-size: 0.6rem; color: #a0aec0; font-weight: 700; text-align: center; padding: 3px 0; border-left: 1px solid #e2e8f0; width: 32px; min-width: 32px; }
+.cal-table th.mes-col { width: 52px; min-width: 52px; text-align: left; padding-left: 4px; border-left: none; color: #4a5568; font-size: 0.72rem; }
+.cal-table td { border-left: 1px solid #edf2f7; vertical-align: middle; height: 32px; padding: 0; position: relative; }
+.cal-table td.mes-label { border-left: none; padding: 0 8px 0 4px; font-size: 0.75rem; font-weight: 700; color: #4a5568; white-space: nowrap; background: white; }
+.cal-table td.fora { background: #fafafa; }
+.cal-table td.livre { background: white; }
+.cal-table tr:hover td { background: #f7fafc; }
+.cal-table tr:hover td.fora { background: #f0f0f0; }
+.cal-barra-row td { background: white !important; height: 36px; padding: 3px 0; }
+.cal-barra-row td.fora { background: #fafafa !important; }
+.cal-barra { position: absolute; top: 4px; bottom: 4px; border-radius: 5px; display: flex; align-items: center; padding: 0 8px; font-size: 0.65rem; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.cal-barra:hover { opacity: 0.85; z-index: 10; }
+.cal-barra.booking  { background: linear-gradient(90deg,#2b6cb0,#3182ce); }
+.cal-barra.airbnb   { background: linear-gradient(90deg,#c53030,#e53e3e); }
+.cal-barra.direta   { background: linear-gradient(90deg,#276749,#38a169); }
+.cal-barra.vrbo     { background: linear-gradient(90deg,#553c9a,#805ad5); }
+.cal-barra.bloqueio { background: linear-gradient(90deg,#2d3748,#4a5568); }
+.cal-barra.noshow   { background: linear-gradient(90deg,#b7791f,#d69e2e); }
 </style>
 </head>
 <body>
@@ -215,8 +215,9 @@ tr:hover td { background: #f7fafc; }
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#4a5568"></div>Bloqueio</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f0f4f8;border:1px solid #e2e8f0"></div>Livre</div>
         </div>
-        <div class="cal-header-days" id="cal-header"></div>
-        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-wrap">
+          <table class="cal-table" id="cal-table"></table>
+        </div>
       </div>
     </div>
   </div>
@@ -334,66 +335,85 @@ function showTab(tab, btn) {
 
 function renderCalendario() {
   const ano = parseInt(document.getElementById('cal-ano').value);
-  // header dias 1-31
-  const header = document.getElementById('cal-header');
-  header.innerHTML = Array.from({length:31},(_,i)=>`<div class="cal-header-day">${i+1}</div>`).join('');
+  const diasMes = [31,28,31,30,31,30,31,31,30,31,30,31];
+  const CELL = 32; // px por célula de dia
 
-  // monta mapa dia→{canal, hospede}
-  const ocupado = {}; // "YYYY-MM-DD" → {canal, hospede}
-  reservasCache.forEach(r => {
-    if(!r.check_in || !r.check_out) return;
-    const ci = new Date(r.check_in + 'T12:00:00');
-    const co = new Date(r.check_out + 'T12:00:00');
-    const d = new Date(ci);
-    while(d < co) {
-      const key = d.toISOString().slice(0,10);
-      ocupado[key] = {canal: (r.canal||'').toLowerCase(), hospede: r.hospede||'', numero: r.numero_reserva||''};
-      d.setDate(d.getDate()+1);
-    }
+  // filtra reservas do ano
+  const reservasAno = reservasCache.filter(r => {
+    if(!r.check_in || !r.check_out) return false;
+    return r.check_in.startsWith(ano) || r.check_out.startsWith(ano);
   });
 
-  const diasMes = [31,28,31,30,31,30,31,31,30,31,30,31];
-  const grid = document.getElementById('cal-grid');
-  grid.innerHTML = '';
+  const table = document.getElementById('cal-table');
+  table.innerHTML = '';
+
+  // cabeçalho dias 1-31
+  const thead = document.createElement('thead');
+  let thRow = '<tr><th class="mes-col"></th>';
+  for(let d=1;d<=31;d++) thRow += `<th>${d}</th>`;
+  thRow += '</tr>';
+  thead.innerHTML = thRow;
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
 
   MESES.forEach((nome, mi) => {
-    const row = document.createElement('div');
-    row.className = 'cal-row';
-    const label = document.createElement('div');
-    label.className = 'cal-month-name';
-    label.textContent = nome.slice(0,3).toUpperCase();
-    row.appendChild(label);
+    const mes = mi + 1;
+    const totalDias = diasMes[mi];
+    const mesStr = String(mes).padStart(2,'0');
+    const inicioMes = new Date(`${ano}-${mesStr}-01T12:00:00`);
+    const fimMes   = new Date(`${ano}-${mesStr}-${String(totalDias).padStart(2,'0')}T12:00:00`);
 
-    const days = document.createElement('div');
-    days.className = 'cal-days';
+    // reservas que tocam este mês
+    const resDoMes = reservasAno.filter(r => {
+      const ci = new Date(r.check_in  + 'T12:00:00');
+      const co = new Date(r.check_out + 'T12:00:00');
+      return ci <= fimMes && co > inicioMes;
+    });
 
-    const total = diasMes[mi];
-    for(let d = 1; d <= 31; d++) {
-      const cel = document.createElement('div');
-      if(d > total) {
-        cel.className = 'cal-day fora-mes';
-      } else {
-        const key = `${ano}-${String(mi+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const info = ocupado[key];
-        if(info) {
-          cel.className = `cal-day ocupado ${info.canal.replace(' ','')}`;
-          const tip = document.createElement('div');
-          tip.className = 'cal-tooltip';
-          tip.textContent = `${info.hospede||info.canal} ${info.numero?'#'+info.numero:''}`.trim();
-          cel.appendChild(tip);
-        } else {
-          cel.className = 'cal-day vazio';
-        }
-        cel.title = '';
-        const num = document.createElement('span');
-        num.textContent = d;
-        cel.appendChild(num);
-      }
-      days.appendChild(cel);
+    // linha de fundo (dias livres/fora)
+    const trFundo = document.createElement('tr');
+    trFundo.className = 'cal-barra-row';
+    let tdFundo = `<td class="mes-label" rowspan="1">${nome.slice(0,3).toUpperCase()}</td>`;
+    for(let d=1;d<=31;d++) {
+      tdFundo += `<td class="${d>totalDias?'fora':'livre'}" style="position:relative"></td>`;
     }
-    row.appendChild(days);
-    grid.appendChild(row);
+    trFundo.innerHTML = tdFundo;
+    tbody.appendChild(trFundo);
+
+    // desenha barras sobre as células usando position absolute
+    resDoMes.forEach(r => {
+      const ci = new Date(r.check_in  + 'T12:00:00');
+      const co = new Date(r.check_out + 'T12:00:00');
+
+      // clamp ao mês
+      const inicio = ci < inicioMes ? inicioMes : ci;
+      const fim    = co > fimMes    ? new Date(`${ano}-${mesStr}-${String(totalDias).padStart(2,'0')}T23:59:00`) : co;
+
+      const diaInicio = inicio.getDate(); // 1-based
+      const diasDuracao = Math.round((fim - inicio) / 86400000);
+      if(diasDuracao <= 0) return;
+
+      const canal = (r.canal||'direta').toLowerCase().replace(' ','');
+      const nome_h = r.hospede || r.canal || '';
+      const label = nome_h || canal;
+
+      // injeta a barra na célula do diaInicio (índice td = diaInicio, já que td[0]=mes-label)
+      const tds = trFundo.querySelectorAll('td');
+      const tdAlvo = tds[diaInicio]; // mes-label ocupa tds[0], dias começam em tds[1]
+      if(!tdAlvo) return;
+
+      const barra = document.createElement('div');
+      barra.className = `cal-barra ${canal}`;
+      const largura = diasDuracao * CELL - 4;
+      barra.style.cssText = `left:2px; right:auto; width:${largura}px;`;
+      barra.title = `${label} | ${fmt(r.check_in)} → ${fmt(r.check_out)} | ${r.diarias} diárias${r.valor_total?' | R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}`;
+      barra.textContent = label;
+      tdAlvo.appendChild(barra);
+    });
   });
+
+  table.appendChild(tbody);
 }
 
 async function carregarReservas() {
