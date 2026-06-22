@@ -53,10 +53,6 @@ def verificar_emails_novos():
                     from app.database import get_client
                     db = get_client()
                     db.table("reservas").update({"numero_reserva": id_reserva}).eq("numero_reserva", "").is_("numero_reserva", "null").execute()
-                service.users().messages().modify(
-                    userId="me", id=msg["id"],
-                    body={"removeLabelIds": ["UNREAD"]}
-                ).execute()
                 novos += 1
 
         if novos > 0:
