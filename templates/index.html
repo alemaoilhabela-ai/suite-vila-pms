@@ -73,7 +73,7 @@ table.res tr:hover td { background: #f7fafc; }
 .btn-del    { background: #fed7d7; color: #9b2c2c; }
 
 /* ── Calendário Gantt ─────────────────────────────────── */
-.cal-wrap   { overflow-x: auto; }
+.cal-wrap   { overflow-x: auto; overflow-y: visible; }
 .cal-legenda { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .cal-legenda-item { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: #4a5568; }
 .cal-legenda-cor  { width: 13px; height: 13px; border-radius: 3px; }
@@ -847,9 +847,16 @@ function renderJanela() {
   tbody.appendChild(tr);
   table.appendChild(tbody);
 
-  // tfoot — repete datas embaixo
+  // tfoot — repete só os números (sem DOW)
   const tfoot = document.createElement('tfoot');
-  tfoot.innerHTML = thHTML;
+  let tfHTML = '<tr><th class="mes-col" style="width:80px"></th>';
+  for(let i=0;i<DIAS;i++){
+    const d = new Date(janelaInicio.getTime()+i*86400000);
+    const isWE = d.getDay()===0||d.getDay()===6;
+    tfHTML += `<th style="${isWE?'color:#d69e2e':''}">${d.getDate()}</th>`;
+  }
+  tfHTML += '</tr>';
+  tfoot.innerHTML = tfHTML;
   table.appendChild(tfoot);
 
   // desenha barras
