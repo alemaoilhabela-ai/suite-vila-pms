@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Suite Vila — Login</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.10); padding: 40px 36px; width: 360px; }
+.logo { text-align: center; margin-bottom: 28px; }
+.logo h1 { font-size: 1.5rem; font-weight: 800; color: #1a365d; }
+.logo p { font-size: 0.8rem; color: #a0aec0; margin-top: 4px; }
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 0.75rem; font-weight: 700; color: #4a5568; margin-bottom: 5px; }
+input { width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 0.9rem; outline: none; transition: border .15s; }
+input:focus { border-color: #3182ce; }
+.btn { width: 100%; padding: 11px; border-radius: 8px; border: none; background: #1a365d; color: white; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .15s; }
+.btn:hover { background: #2c5282; }
+.erro { background: #fed7d7; color: #c53030; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; margin-top: 14px; display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <h1>🏠 Suite Vila</h1>
+    <p>Sistema de Gestão de Reservas</p>
+  </div>
+  <div class="form-group">
+    <label>E-mail</label>
+    <input type="email" id="email" placeholder="seu@email.com" autofocus>
+  </div>
+  <div class="form-group">
+    <label>Senha</label>
+    <input type="password" id="senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')entrar()">
+  </div>
+  <button class="btn" onclick="entrar()">Entrar</button>
+  <div class="erro" id="erro"></div>
+</div>
+<script>
+async function entrar() {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value;
+  const erro  = document.getElementById('erro');
+  erro.style.display = 'none';
+  if(!email || !senha) { erro.textContent='Preencha e-mail e senha'; erro.style.display='block'; return; }
+  const r = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({email, senha})
+  });
+  const d = await r.json();
+  if(r.ok) {
+    window.location.href = '/';
+  } else {
+    erro.textContent = d.error || 'Erro ao entrar';
+    erro.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

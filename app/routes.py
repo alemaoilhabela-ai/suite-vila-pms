@@ -1,11 +1,13 @@
 from flask import Blueprint, jsonify, request, render_template
 from app.database import get_client
+from app.auth import login_required, tem_permissao
 from agent.ical_agent import verificar_feeds, processar_resposta_whatsapp
 from datetime import date
 
 bp = Blueprint("main", __name__)
 
 @bp.get("/")
+@login_required
 def index():
     return render_template("index.html")
 

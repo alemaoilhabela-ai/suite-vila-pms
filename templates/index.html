@@ -11,6 +11,22 @@ body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #
 header { background: #1a365d; color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
 header h1 { font-size: 1.3rem; font-weight: 700; }
 header span { font-size: 0.82rem; opacity: 0.65; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.user-info { font-size: 0.8rem; opacity: 0.8; }
+.btn-sm { padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,.4); background: transparent; color: white; font-size: 0.78rem; cursor: pointer; }
+.btn-sm:hover { background: rgba(255,255,255,.15); }
+
+/* Modal admin */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.admin-table th { background: #f7fafc; padding: 8px 10px; text-align: left; font-size: 0.7rem; text-transform: uppercase; color: #4a5568; border-bottom: 1px solid #e2e8f0; }
+.admin-table td { padding: 8px 10px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+.papel-badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; }
+.papel-admin { background: #1a365d; color: white; }
+.papel-editor { background: #c6f6d5; color: #22543d; }
+.papel-visitante { background: #e2e8f0; color: #4a5568; }
+.perm-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.perm-item { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #4a5568; }
+.perm-item input[type=checkbox] { width: 14px; height: 14px; cursor: pointer; }
 .container { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
 
 .kpis { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
@@ -147,7 +163,12 @@ tr:hover td { background: #f7fafc; }
 <body>
 <header>
   <h1>🏠 Suite Vila — PMS</h1>
-  <span id="hoje"></span>
+  <div class="header-right">
+    <span id="hoje"></span>
+    <span class="user-info" id="user-info"></span>
+    <button class="btn-sm" id="btn-admin" style="display:none" onclick="abrirAdmin()">⚙️ Usuários</button>
+    <button class="btn-sm" onclick="sair()">Sair</button>
+  </div>
 </header>
 
 <div class="container">
@@ -279,6 +300,58 @@ tr:hover td { background: #f7fafc; }
   </div>
 </div>
 
+<!-- Modal admin usuários -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal" style="width:680px">
+    <h3>⚙️ Gerenciar Usuários</h3>
+    <div style="overflow-x:auto;margin-bottom:14px">
+      <table class="admin-table" id="admin-table">
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Telas</th><th>Ativo</th><th></th></tr></thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-success" onclick="abrirNovoUsuario()">+ Novo usuário</button>
+    <div class="modal-footer"><button class="btn btn-gray" onclick="fecharAdmin()">Fechar</button></div>
+  </div>
+</div>
+
+<!-- Modal novo/editar usuário -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal" style="width:460px">
+    <h3 id="usuario-titulo">Novo Usuário</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Nome</label><input type="text" id="u-nome"></div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="u-email"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Papel</label>
+        <select id="u-papel" onchange="onPapelChange()">
+          <option value="visitante">Visitante</option>
+          <option value="editor">Editor</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Senha <span id="u-senha-hint" style="font-weight:400;color:#a0aec0">(deixe em branco para não alterar)</span></label><input type="password" id="u-senha" placeholder="Nova senha"></div>
+    </div>
+    <div class="form-group" id="u-perms-wrap">
+      <label>Telas permitidas</label>
+      <div class="perm-grid" style="margin-top:6px">
+        <label class="perm-item"><input type="checkbox" id="p-calendario"> Calendário</label>
+        <label class="perm-item"><input type="checkbox" id="p-reservas"> Reservas</label>
+        <label class="perm-item"><input type="checkbox" id="p-relatorio"> Relatório</label>
+        <label class="perm-item"><input type="checkbox" id="p-config"> Configurações</label>
+      </div>
+    </div>
+    <div class="form-group" id="u-ativo-wrap" style="display:none">
+      <label class="perm-item"><input type="checkbox" id="u-ativo" checked> Usuário ativo</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="fecharUsuario()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal reserva -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
@@ -307,8 +380,7 @@ tr:hover td { background: #f7fafc; }
         <option>No Show</option><option>Bloqueado</option>
       </select>
     </div>
-    <div class="form-group" id="f-senha-wrap" style="display:none"><label>🔒 Senha para Bloqueio</label><input type="password" id="f-senha" placeholder="Digite a senha"></div>
-    <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
+<div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarReserva()">Salvar</button>
@@ -330,10 +402,121 @@ tr:hover td { background: #f7fafc; }
 <script>
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const COMISSOES = {Booking:0.13, Airbnb:0.03, Direta:0.0, Vrbo:0.0};
+const TELAS = ['calendario','reservas','relatorio','config'];
 let reservasCache = [];
 let editandoId = null;
+let meUser = null;
+let editandoUsuarioId = null;
 
 document.getElementById('hoje').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+// --- Auth ---
+async function iniciarSessao() {
+  const r = await fetch('/api/auth/me');
+  if(!r.ok) { window.location.href='/login'; return; }
+  meUser = await r.json();
+  document.getElementById('user-info').textContent = meUser.nome + ' (' + meUser.papel + ')';
+  if(meUser.papel === 'admin') document.getElementById('btn-admin').style.display = '';
+  // esconde abas sem permissão (admin vê tudo)
+  if(meUser.papel !== 'admin') {
+    const perms = meUser.permissoes || [];
+    if(!perms.includes('calendario')) document.querySelectorAll('[onclick*="calendario"]').forEach(b=>b.style.display='none');
+    if(!perms.includes('reservas'))   document.querySelectorAll('[onclick*="reservas"]').forEach(b=>b.style.display='none');
+    if(!perms.includes('relatorio'))  document.querySelectorAll('[onclick*="relatorio"]').forEach(b=>b.style.display='none');
+  }
+  carregarReservas(true);
+}
+
+async function sair() {
+  await fetch('/api/auth/logout', {method:'POST'});
+  window.location.href = '/login';
+}
+
+// --- Admin usuários ---
+async function abrirAdmin() {
+  document.getElementById('modal-admin').classList.add('open');
+  const r = await fetch('/api/admin/usuarios');
+  const users = await r.json();
+  const tbody = document.getElementById('admin-tbody');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${esc(u.nome)}</strong></td>
+      <td>${esc(u.email)}</td>
+      <td><span class="papel-badge papel-${u.papel}">${u.papel}</span></td>
+      <td style="font-size:0.72rem;color:#718096">${u.papel==='admin'?'Tudo':Object.entries(u.permissoes||{}).filter(([,v])=>v).map(([k])=>k).join(', ')||'—'}</td>
+      <td>${u.ativo?'✅':'❌'}</td>
+      <td><button class="btn-icon" onclick="editarUsuario(${JSON.stringify(JSON.stringify(u))})">✏️</button>
+          <button class="btn-icon btn-del" onclick="deletarUsuario(${u.id},'${esc(u.nome)}')">✕</button></td>
+    </tr>`).join('');
+}
+
+function fecharAdmin() { document.getElementById('modal-admin').classList.remove('open'); }
+
+function abrirNovoUsuario() {
+  editandoUsuarioId = null;
+  document.getElementById('usuario-titulo').textContent = 'Novo Usuário';
+  document.getElementById('u-nome').value = '';
+  document.getElementById('u-email').value = '';
+  document.getElementById('u-senha').value = '';
+  document.getElementById('u-papel').value = 'visitante';
+  document.getElementById('u-senha-hint').style.display = 'none';
+  document.getElementById('u-ativo-wrap').style.display = 'none';
+  TELAS.forEach(t => { const el = document.getElementById('p-'+t); if(el) el.checked = false; });
+  onPapelChange();
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function editarUsuario(jsonStr) {
+  const u = JSON.parse(jsonStr);
+  editandoUsuarioId = u.id;
+  document.getElementById('usuario-titulo').textContent = 'Editar Usuário';
+  document.getElementById('u-nome').value = u.nome;
+  document.getElementById('u-email').value = u.email;
+  document.getElementById('u-senha').value = '';
+  document.getElementById('u-papel').value = u.papel;
+  document.getElementById('u-senha-hint').style.display = '';
+  document.getElementById('u-ativo-wrap').style.display = '';
+  document.getElementById('u-ativo').checked = u.ativo;
+  TELAS.forEach(t => { const el = document.getElementById('p-'+t); if(el) el.checked = !!(u.permissoes||{})[t]; });
+  onPapelChange();
+  document.getElementById('modal-usuario').classList.add('open');
+}
+
+function onPapelChange() {
+  const isAdmin = document.getElementById('u-papel').value === 'admin';
+  document.getElementById('u-perms-wrap').style.opacity = isAdmin ? '0.4' : '1';
+  document.getElementById('u-perms-wrap').style.pointerEvents = isAdmin ? 'none' : '';
+}
+
+function fecharUsuario() { document.getElementById('modal-usuario').classList.remove('open'); }
+
+async function salvarUsuario() {
+  const papel = document.getElementById('u-papel').value;
+  const perms = {};
+  TELAS.forEach(t => { const el = document.getElementById('p-'+t); if(el) perms[t] = el.checked; });
+  const payload = {
+    nome: document.getElementById('u-nome').value.trim(),
+    email: document.getElementById('u-email').value.trim(),
+    senha: document.getElementById('u-senha').value,
+    papel,
+    permissoes: perms,
+    ativo: document.getElementById('u-ativo').checked ?? true,
+  };
+  if(!payload.nome || !payload.email) return alert('Nome e e-mail são obrigatórios');
+  if(!editandoUsuarioId && !payload.senha) return alert('Senha obrigatória para novo usuário');
+  const url = editandoUsuarioId ? `/api/admin/usuarios/${editandoUsuarioId}` : '/api/admin/usuarios';
+  const method = editandoUsuarioId ? 'PUT' : 'POST';
+  const r = await fetch(url, {method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  if(!r.ok) { const d=await r.json(); return alert(d.error||'Erro'); }
+  fecharUsuario();
+  abrirAdmin();
+}
+
+async function deletarUsuario(id, nome) {
+  if(!confirm(`Excluir o usuário "${nome}"?`)) return;
+  await fetch(`/api/admin/usuarios/${id}`, {method:'DELETE'});
+  abrirAdmin();
+}
 
 const anoAtual = new Date().getFullYear();
 [document.getElementById('filtro-ano'), document.getElementById('rel-ano'), document.getElementById('cal-ano')].forEach(sel => {
@@ -361,11 +544,9 @@ function sincronizarAno(origem) {
 async function salvarCorte() {
   const val = document.getElementById('data-corte').value;
   if(!val) return;
-  const senha = prompt('🔒 Senha para alterar o bloqueio de vendas:');
-  const cfg = await (await fetch('/api/config')).json();
-  if(senha !== (cfg.senha_bloqueio || 'vila2024')) { alert('Senha incorreta!'); return; }
   await fetch('/api/config', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({data_corte_vendas: val})});
-  alert('Data de corte salva! Bloqueio criado até ' + new Date(new Date(val).getTime()+730*86400000).toLocaleDateString('pt-BR'));
+  const fim = new Date(new Date(val).getTime()+730*86400000).toLocaleDateString('pt-BR');
+  alert('Data de corte salva! Bloqueio criado até ' + fim);
   carregarReservas(true);
 }
 
@@ -678,12 +859,6 @@ function editarReserva(id) {
 
 async function salvarReserva() {
   const canal = document.getElementById('f-canal').value;
-  // senha para bloqueio
-  if(canal === 'Bloqueio') {
-    const senhaInput = document.getElementById('f-senha').value;
-    const cfg = await (await fetch('/api/config')).json();
-    if(senhaInput !== (cfg.senha_bloqueio || 'vila2024')) { alert('Senha incorreta!'); return; }
-  }
   const payload = {
     check_in: document.getElementById('f-checkin').value,
     check_out: document.getElementById('f-checkout').value,
@@ -755,7 +930,7 @@ async function carregarRelatorio() {
   m.addEventListener('click', e => { if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 });
 
-carregarReservas(true);
+iniciarSessao();
 </script>
 </body>
 </html>
