@@ -20,6 +20,7 @@ def create_app():
     scheduler.add_job(func=_run_email_monitor, trigger="interval", minutes=5, id="email_check")
     scheduler.add_job(func=_run_agent, trigger="interval", hours=6, id="ical_check")
     scheduler.start()
+    print("[Scheduler] Iniciado com sucesso")
 
     return app
 
