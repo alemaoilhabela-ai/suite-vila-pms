@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, render_template
 from app.database import get_client
 from app.auth import login_required, tem_permissao
-from agent.ical_agent import verificar_feeds, processar_resposta_whatsapp
+from agent.ical_agent import verificar_feeds, processar_resposta_whatsapp, processar_bloqueio_telegram
 from datetime import date
 
 bp = Blueprint("main", __name__)
@@ -126,6 +126,10 @@ def rodar_agente():
 def webhook_whatsapp():
     data = request.json or {}
     texto = data.get("text", "") or data.get("message", "")
+    if texto.upper().startswith("BLOQUEIO "):
+        uid_prefix = texto[9:].strip()
+        ok, msg = processar_bloqueio_telegram(uid_prefix)
+        return jsonify({"ok": ok, "msg": msg})
     if texto.upper().startswith("RESERVA "):
         ok, msg = processar_resposta_whatsapp(texto)
         return jsonify({"ok": ok, "msg": msg})

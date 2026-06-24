@@ -90,6 +90,34 @@ def verificar_feeds():
             notificar_nova_reserva(uid, canal, ev["check_in"], ev["check_out"])
             print(f"[{canal}] Nova reserva registrada: {uid} ({ev['check_in']} → {ev['check_out']})")
 
+def processar_bloqueio_telegram(texto):
+    """
+    Formato: BLOQUEIO <uid8>
+    Converte a reserva em Bloqueio automaticamente.
+    """
+    uid_prefix = texto.replace("BLOQUEIO", "").strip()
+    if not uid_prefix:
+        return False, "Formato inválido. Use: BLOQUEIO <id>"
+
+    db = get_client()
+    res = db.table("reservas").select("id,uid,check_in,check_out").ilike("uid", f"{uid_prefix}%").eq("aguardando_detalhes", True).execute()
+    if not res.data:
+        return False, f"Reserva {uid_prefix} não encontrada ou já preenchida."
+
+    row = res.data[0]
+    db.table("reservas").update({
+        "canal": "Bloqueio",
+        "status": "Bloqueado",
+        "hospede": "Bloqueado",
+        "status_financeiro": "Paga",
+        "aguardando_detalhes": False,
+    }).eq("id", row["id"]).execute()
+    db.table("mensagens_pendentes").update({"respondido": True}).eq("uid", row["uid"]).execute()
+
+    from app.telegram import enviar_mensagem
+    enviar_mensagem(f"🔒 Bloqueio registrado: {row['check_in']} → {row['check_out']}")
+    return True, "Bloqueio registrado."
+
 def processar_resposta_whatsapp(texto):
     """
     Formato esperado: RESERVA <uid8> | Nome | Valor | Obs
