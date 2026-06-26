@@ -114,7 +114,7 @@ def marcar_todos_pago():
     db.table("reservas").update({"status_financeiro": "Paga"}).neq("canal", "Bloqueio").execute()
     return jsonify({"ok": True, "msg": "Todas as reservas marcadas como Paga"})
 
-@bp.post("/api/agent/run")
+@bp.route("/api/agent/run", methods=["GET","POST"])
 def rodar_agente():
     try:
         verificar_feeds()
@@ -122,7 +122,7 @@ def rodar_agente():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-@bp.post("/api/agent/email")
+@bp.route("/api/agent/email", methods=["GET","POST"])
 def rodar_email():
     try:
         from agent.email_monitor import verificar_emails_novos
