@@ -118,7 +118,16 @@ def marcar_todos_pago():
 def rodar_agente():
     try:
         verificar_feeds()
-        return jsonify({"ok": True, "msg": "Agente executado com sucesso"})
+        return jsonify({"ok": True, "msg": "Agente iCal executado com sucesso"})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@bp.post("/api/agent/email")
+def rodar_email():
+    try:
+        from agent.email_monitor import verificar_emails_novos
+        novos = verificar_emails_novos()
+        return jsonify({"ok": True, "novos": novos})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
