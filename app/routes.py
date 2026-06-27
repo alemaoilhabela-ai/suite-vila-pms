@@ -122,15 +122,6 @@ def rodar_agente():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-@bp.route("/api/agent/email", methods=["GET","POST"])
-def rodar_email():
-    try:
-        from agent.email_monitor import verificar_emails_novos
-        novos = verificar_emails_novos()
-        return jsonify({"ok": True, "novos": novos})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
 @bp.post("/api/webhook/whatsapp")
 def webhook_whatsapp():
     data = request.json or {}
