@@ -29,6 +29,8 @@ def parse_ical(url):
             dt_end = dt_end.date()
         if dt_end <= date.today():
             continue
+        if dt_start < date.today():
+            continue
         eventos.append({
             "uid": str(component.get("UID")),
             "check_in": dt_start,
@@ -62,9 +64,9 @@ def verificar_feeds():
             if data_corte and ev["check_in"] >= data_corte:
                 continue
             uid = ev["uid"]
-            # verifica por uid OU por check_in+check_out+canal (evita duplicar reservas do Excel)
+            # verifica por uid OU por check_in+check_out (sem filtrar canal — cobre caso em que reserva virou Bloqueio)
             por_uid = db.table("reservas").select("id").eq("uid", uid).execute()
-            por_datas = db.table("reservas").select("id").eq("check_in", str(ev["check_in"])).eq("check_out", str(ev["check_out"])).eq("canal", canal).execute()
+            por_datas = db.table("reservas").select("id").eq("check_in", str(ev["check_in"])).eq("check_out", str(ev["check_out"])).execute()
             if por_uid.data or por_datas.data:
                 # garante que o uid fica salvo para referência futura
                 if por_datas.data and not por_uid.data:
