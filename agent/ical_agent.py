@@ -64,13 +64,16 @@ def verificar_feeds():
             if data_corte and ev["check_in"] >= data_corte:
                 continue
             uid = ev["uid"]
-            # verifica por uid OU por check_in+check_out (sem filtrar canal — cobre caso em que reserva virou Bloqueio)
+            # verifica por uid, por check_in+check_out exato, ou por check_out+canal
+            # (check_in muda todo dia em reservas em andamento, mas check_out permanece fixo)
             por_uid = db.table("reservas").select("id").eq("uid", uid).execute()
             por_datas = db.table("reservas").select("id").eq("check_in", str(ev["check_in"])).eq("check_out", str(ev["check_out"])).execute()
-            if por_uid.data or por_datas.data:
-                # garante que o uid fica salvo para referência futura
-                if por_datas.data and not por_uid.data:
-                    db.table("reservas").update({"uid": uid}).eq("id", por_datas.data[0]["id"]).execute()
+            por_checkout = db.table("reservas").select("id").eq("check_out", str(ev["check_out"])).eq("canal", canal).execute()
+            existente = por_uid.data or por_datas.data or por_checkout.data
+            if existente:
+                ref = (por_datas.data or por_checkout.data or [None])[0]
+                if ref and not por_uid.data:
+                    db.table("reservas").update({"uid": uid}).eq("id", ref["id"]).execute()
                 continue
 
             db.table("reservas").insert({
