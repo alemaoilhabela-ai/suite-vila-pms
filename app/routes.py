@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, render_template
 from app.database import get_client
 from app.auth import login_required, tem_permissao
 from agent.ical_agent import verificar_feeds, processar_resposta_whatsapp, processar_bloqueio_telegram
-from datetime import date
+from datetime import date, timedelta
 
 bp = Blueprint("main", __name__)
 
@@ -84,26 +84,54 @@ def deletar_reserva(rid):
 @bp.get("/api/relatorios/mensal")
 def relatorio_mensal():
     db = get_client()
-    ano = request.args.get("ano", date.today().year)
-    res = db.table("reservas").select("check_in,check_out,valor_total,canal,diarias,adr").gte("check_in", f"{ano}-01-01").lte("check_in", f"{ano}-12-31").neq("status", "Bloqueado").execute()
+    ano = int(request.args.get("ano", date.today().year))
+    # busca reservas que cruzam o ano (check_in <= 31/dez E check_out >= 01/jan)
+    res = db.table("reservas").select("check_in,check_out,valor_total,canal,diarias,adr").lte("check_in", f"{ano}-12-31").gte("check_out", f"{ano}-01-02").neq("status", "Bloqueado").execute()
 
     COMISSOES = {"Booking": 0.13, "Airbnb": 0.03, "Direta": 0.0, "Vrbo": 0.0}
     meses = {i: {"diarias": 0, "faturamento": 0.0, "faturamento_real": 0.0, "reservas": 0} for i in range(1, 13)}
+    reservas_contadas = set()
 
     for r in res.data:
         if not r["valor_total"]:
             continue
-        mes = int(r["check_in"][5:7])
-        comissao = COMISSOES.get(r["canal"], 0)
-        meses[mes]["diarias"] += r["diarias"] or 0
-        meses[mes]["faturamento"] += float(r["valor_total"])
-        meses[mes]["faturamento_real"] += float(r["valor_total"]) * (1 - comissao)
-        meses[mes]["reservas"] += 1
+        ci = date.fromisoformat(r["check_in"])
+        co = date.fromisoformat(r["check_out"])
+        total_noites = (co - ci).days
+        if total_noites <= 0:
+            continue
 
-    dias_mes = [31,28,31,30,31,30,31,31,30,31,30,31]
+        valor      = float(r["valor_total"])
+        comissao   = COMISSOES.get(r["canal"], 0)
+        valor_real = valor * (1 - comissao)
+        valor_noite      = valor / total_noites
+        valor_noite_real = valor_real / total_noites
+
+        # percorre cada noite da reserva e distribui proporcionalmente
+        d = ci
+        noites_no_ano = {i: 0 for i in range(1, 13)}
+        while d < co:
+            if d.year == ano:
+                noites_no_ano[d.month] += 1
+            d += timedelta(days=1)
+
+        chave_reserva = (r["check_in"], r["check_out"], r["canal"])
+        for mes, noites in noites_no_ano.items():
+            if noites == 0:
+                continue
+            meses[mes]["diarias"]          += noites
+            meses[mes]["faturamento"]      += valor_noite * noites
+            meses[mes]["faturamento_real"] += valor_noite_real * noites
+            # conta a reserva apenas no mês do check-in (evita duplicar contagem)
+            if mes == ci.month and ci.year == ano and chave_reserva not in reservas_contadas:
+                meses[mes]["reservas"] += 1
+                reservas_contadas.add(chave_reserva)
+
+    import calendar
     resultado = []
     for m, dados in meses.items():
-        occ = round(dados["diarias"] / dias_mes[m-1], 4) if dias_mes[m-1] else 0
+        dias_no_mes = calendar.monthrange(ano, m)[1]
+        occ = round(dados["diarias"] / dias_no_mes, 4) if dias_no_mes else 0
         adr = round(dados["faturamento"] / dados["diarias"], 2) if dados["diarias"] else 0
         resultado.append({"mes": m, "occ": occ, "adr": adr, **dados})
     return jsonify(resultado)
