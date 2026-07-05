@@ -68,7 +68,7 @@ def verificar_feeds():
             # (check_in muda todo dia em reservas em andamento, mas check_out permanece fixo)
             por_uid = db.table("reservas").select("id").eq("uid", uid).execute()
             por_datas = db.table("reservas").select("id").eq("check_in", str(ev["check_in"])).eq("check_out", str(ev["check_out"])).execute()
-            por_checkout = db.table("reservas").select("id").eq("check_out", str(ev["check_out"])).eq("canal", canal).execute()
+            por_checkout = db.table("reservas").select("id").eq("check_out", str(ev["check_out"])).execute()
             existente = por_uid.data or por_datas.data or por_checkout.data
             if existente:
                 ref = (por_datas.data or por_checkout.data or [None])[0]
