@@ -303,13 +303,30 @@ table.res tr:hover td { background: #f7fafc; }
       <div class="card">
         <div class="card-header">
           <h2>Relatório Mensal</h2>
-          <select id="rel-ano" onchange="carregarRelatorio()"></select>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="rel-ano" onchange="carregarRelatorio()"></select>
+            <button class="btn btn-gray" onclick="abrirComparativo()" style="font-size:0.8rem;padding:5px 12px">📊 Comparativo</button>
+          </div>
         </div>
         <div style="padding:14px;overflow-x:auto">
           <table class="rel-table">
             <thead><tr><th>Mês</th><th>Reservas</th><th>Diárias</th><th>Fat. Bruto</th><th>Comissão</th><th>Fat. Real</th><th>ADR</th><th>OCC</th></tr></thead>
             <tbody id="rel-body"></tbody>
             <tfoot id="rel-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <!-- Tabela comparativa -->
+      <div class="card" id="card-comparativo" style="display:none">
+        <div class="card-header">
+          <h2 id="comp-titulo">Comparativo</h2>
+          <button class="btn btn-gray" onclick="fecharComparativo()" style="font-size:0.8rem;padding:5px 12px">✕ Fechar</button>
+        </div>
+        <div style="padding:14px;overflow-x:auto">
+          <table class="rel-table" id="comp-table">
+            <thead id="comp-thead"></thead>
+            <tbody id="comp-body"></tbody>
+            <tfoot id="comp-foot"></tfoot>
           </table>
         </div>
       </div>
@@ -350,6 +367,32 @@ table.res tr:hover td { background: #f7fafc; }
   </div>
 
 </div><!-- /container -->
+
+<!-- ─── Modal comparativo ────────────────────────────────── -->
+<div class="modal-overlay" id="modal-comparativo">
+  <div class="modal" style="width:420px">
+    <h3>📊 Comparativo de Anos</h3>
+    <div style="margin-bottom:14px">
+      <label style="font-size:0.78rem;font-weight:700;color:#4a5568;display:block;margin-bottom:8px">Anos para comparar</label>
+      <div id="comp-anos-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:0.78rem;font-weight:700;color:#4a5568;display:block;margin-bottom:8px">Métrica</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="comp-metrica" value="faturamento_real" checked> Fat. Real</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="comp-metrica" value="faturamento"> Fat. Bruto</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="comp-metrica" value="diarias"> Diárias</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="comp-metrica" value="occ"> OCC %</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="comp-metrica" value="adr"> ADR</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="comp-metrica" value="reservas"> Reservas</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="document.getElementById('modal-comparativo').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="gerarComparativo()">Gerar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ─── Modal pendências ─────────────────────────────────── -->
 <div class="modal-overlay" id="modal-pend">
@@ -1047,6 +1090,110 @@ async function carregarRelatorio(){
     <td style="color:#c53030">R$ ${com2.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     <td style="color:#276749">R$ ${totR.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     <td>—</td><td>—</td></tr>`;
+}
+
+// ─── Comparativo ────────────────────────────────────────────
+const METRICA_LABEL = {
+  faturamento_real: 'Fat. Real (R$)',
+  faturamento:      'Fat. Bruto (R$)',
+  diarias:          'Diárias',
+  occ:              'OCC %',
+  adr:              'ADR (R$)',
+  reservas:         'Reservas',
+};
+
+function abrirComparativo(){
+  const anoAtual = parseInt(document.getElementById('rel-ano').value) || new Date().getFullYear();
+  const wrap = document.getElementById('comp-anos-wrap');
+  wrap.innerHTML = '';
+  for(let a = anoAtual - 3; a <= anoAtual; a++){
+    const checked = (a === anoAtual || a === anoAtual - 1) ? 'checked' : '';
+    wrap.innerHTML += `<label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+      <input type="checkbox" name="comp-ano" value="${a}" ${checked}> ${a}
+    </label>`;
+  }
+  document.getElementById('modal-comparativo').classList.add('open');
+}
+
+async function gerarComparativo(){
+  const anos = [...document.querySelectorAll('input[name="comp-ano"]:checked')].map(el=>parseInt(el.value)).sort();
+  const metrica = document.querySelector('input[name="comp-metrica"]:checked').value;
+  if(anos.length < 2){ alert('Selecione pelo menos 2 anos.'); return; }
+  document.getElementById('modal-comparativo').classList.remove('open');
+
+  const dados = {};
+  await Promise.all(anos.map(async a=>{
+    const r = await fetch(`/api/relatorios/mensal?ano=${a}`);
+    dados[a] = await r.json();
+  }));
+
+  // monta cabeçalho
+  const isReal = metrica === 'faturamento_real' || metrica === 'faturamento' || metrica === 'adr';
+  const isOcc  = metrica === 'occ';
+  const anosCols = anos.map(a=>`<th>${a}</th>`).join('');
+  const varCols  = anos.slice(1).map((_,i)=>`<th>Var ${anos[i]}→${anos[i+1]}</th>`).join('');
+  document.getElementById('comp-thead').innerHTML =
+    `<tr><th>Mês</th>${anosCols}${varCols}</tr>`;
+
+  function fmt(v, m){
+    if(m==='occ') return (v*100).toFixed(1)+'%';
+    if(m==='diarias'||m==='reservas') return v;
+    return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+  }
+  function varPct(a,b){ if(!a) return '—'; const p=((b-a)/a*100); return (p>=0?'+':'')+p.toFixed(1)+'%'; }
+  function varColor(a,b){ if(!a) return ''; return (b>=a)?'color:#276749':'color:#c53030'; }
+
+  const totais = {};
+  anos.forEach(a=>{ totais[a]={diarias:0,faturamento:0,faturamento_real:0,reservas:0,adr_sum:0,occ_sum:0,meses:0}; });
+
+  const rows = MESES.map((mes,i)=>{
+    const vals = anos.map(a=>{
+      const m = (dados[a]||[]).find(x=>x.mes===(i+1));
+      if(m && m.diarias){
+        totais[a].diarias        += m.diarias;
+        totais[a].faturamento    += m.faturamento;
+        totais[a].faturamento_real += m.faturamento_real;
+        totais[a].reservas       += m.reservas;
+        totais[a].adr_sum        += m.adr||0;
+        totais[a].occ_sum        += m.occ||0;
+        totais[a].meses++;
+      }
+      return m && m.diarias ? m[metrica] : null;
+    });
+    const tdVals = vals.map(v=> v===null ? '<td style="color:#a0aec0">—</td>' : `<td>${fmt(v,metrica)}</td>`).join('');
+    const tdVars = anos.slice(1).map((_,j)=>{
+      const [va,vb]=[vals[j],vals[j+1]];
+      if(va===null||vb===null) return '<td style="color:#a0aec0">—</td>';
+      return `<td style="font-weight:600;${varColor(va,vb)}">${varPct(va,vb)}</td>`;
+    }).join('');
+    return `<tr><td>${mes}</td>${tdVals}${tdVars}</tr>`;
+  });
+
+  document.getElementById('comp-body').innerHTML = rows.join('');
+
+  // totais
+  const totVals = anos.map(a=>{
+    const t = totais[a];
+    let v;
+    if(metrica==='occ') v = t.meses ? t.occ_sum/t.meses : 0;
+    else if(metrica==='adr') v = t.meses ? t.adr_sum/t.meses : 0;
+    else v = t[metrica]||0;
+    return v;
+  });
+  const tdTotVals = totVals.map(v=>`<td style="font-weight:700">${fmt(v,metrica)}</td>`).join('');
+  const tdTotVars = anos.slice(1).map((_,j)=>{
+    const [va,vb]=[totVals[j],totVals[j+1]];
+    return `<td style="font-weight:700;${varColor(va,vb)}">${varPct(va,vb)}</td>`;
+  }).join('');
+  document.getElementById('comp-foot').innerHTML = `<tr><td>TOTAL/MÉD</td>${tdTotVals}${tdTotVars}</tr>`;
+
+  document.getElementById('comp-titulo').textContent = `Comparativo — ${METRICA_LABEL[metrica]}`;
+  document.getElementById('card-comparativo').style.display = '';
+  document.getElementById('card-comparativo').scrollIntoView({behavior:'smooth'});
+}
+
+function fecharComparativo(){
+  document.getElementById('card-comparativo').style.display='none';
 }
 
 // ─── Config ─────────────────────────────────────────────────
