@@ -3,6 +3,7 @@ from app.database import get_client
 from app.auth import login_required, tem_permissao
 from agent.ical_agent import verificar_feeds, processar_resposta_whatsapp, processar_bloqueio_telegram
 from datetime import date, timedelta
+import calendar
 
 bp = Blueprint("main", __name__)
 
@@ -127,7 +128,6 @@ def relatorio_mensal():
                 meses[mes]["reservas"] += 1
                 reservas_contadas.add(chave_reserva)
 
-    import calendar
     resultado = []
     for m, dados in meses.items():
         dias_no_mes = calendar.monthrange(ano, m)[1]
