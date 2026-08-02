@@ -704,6 +704,7 @@ function abrirPendentes() {
       </div>
       <div class="pend-actions">
         <button class="btn btn-gray" style="background:#fed7d7;color:#9b2c2c" onclick="excluirPendente(${r.id})">🗑 Excluir</button>
+        <button class="btn btn-gray" style="background:#e9d8fd;color:#553c9a" onclick="bloquearPendente(${r.id})">🔒 Bloqueio</button>
         <button class="btn btn-success" onclick="salvarPendente(${r.id})">✅ Salvar</button>
       </div>
     </div>`).join('')||'<p style="text-align:center;color:#a0aec0;padding:20px">Sem pendências!</p>';
@@ -718,6 +719,15 @@ async function salvarPendente(id) {
   const obs=document.getElementById(`po-${id}`).value.trim();
   if(!hospede||!valor) return alert('Preencha nome e valor!');
   await fetch(`/api/reservas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hospede,valor_total:valor,observacoes:obs,aguardando_detalhes:false,status_financeiro:'Não Paga'})});
+  document.getElementById(`pitem-${id}`).remove();
+  carregarReservas();
+}
+
+async function bloquearPendente(id){
+  await fetch(`/api/reservas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    canal:'Bloqueio', status:'Bloqueado', hospede:'Bloqueado',
+    status_financeiro:'Paga', aguardando_detalhes:false
+  })});
   document.getElementById(`pitem-${id}`).remove();
   carregarReservas();
 }
