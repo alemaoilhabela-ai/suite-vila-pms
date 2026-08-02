@@ -210,6 +210,7 @@ table.res tr:hover td { background: #f7fafc; }
       <div class="card-header">
         <h2>Calendário de Ocupação</h2>
         <div class="card-actions">
+          <button class="btn btn-primary" onclick="rodarAgente()" style="font-size:0.78rem;padding:5px 10px">🔄 Verificar iCal</button>
           <button class="btn btn-gray" onclick="mudarAno(-1)">◀ Anterior</button>
           <select id="cal-ano" onchange="sincronizarAno('cal-ano'); carregarReservas(true)"></select>
           <button class="btn btn-gray" onclick="mudarAno(+1)">Próximo ▶</button>
