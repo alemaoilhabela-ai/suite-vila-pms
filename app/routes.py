@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, Response
 from app.database import get_client
 from app.auth import login_required, tem_permissao
 from agent.ical_agent import verificar_feeds, processar_resposta_whatsapp, processar_bloqueio_telegram
@@ -162,6 +162,39 @@ def webhook_whatsapp():
         ok, msg = processar_resposta_whatsapp(texto)
         return jsonify({"ok": ok, "msg": msg})
     return jsonify({"ok": False, "msg": "Mensagem ignorada"})
+
+@bp.get("/api/calendar/export.ics")
+def exportar_ical():
+    db = get_client()
+    res = db.table("reservas").select("uid,check_in,check_out,hospede,canal,status").gte("check_out", str(date.today())).execute()
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Suite Vila PMS//PT",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "X-WR-CALNAME:Suite Vila",
+    ]
+    for r in res.data:
+        uid = r.get("uid") or f"{r['check_in']}-{r['check_out']}@suitevila"
+        ci  = r["check_in"].replace("-", "")
+        co  = r["check_out"].replace("-", "")
+        hospede = r.get("hospede") or "Reservado"
+        canal   = r.get("canal") or ""
+        summary = "Bloqueado" if r.get("status") == "Bloqueado" else f"{hospede} ({canal})"
+        lines += [
+            "BEGIN:VEVENT",
+            f"UID:{uid}",
+            f"DTSTART;VALUE=DATE:{ci}",
+            f"DTEND;VALUE=DATE:{co}",
+            f"SUMMARY:{summary}",
+            "STATUS:CONFIRMED",
+            "END:VEVENT",
+        ]
+    lines.append("END:VCALENDAR")
+    return Response("\r\n".join(lines), mimetype="text/calendar", headers={
+        "Content-Disposition": "attachment; filename=suite-vila.ics"
+    })
 
 @bp.post("/api/webhook/telegram")
 def webhook_telegram():
