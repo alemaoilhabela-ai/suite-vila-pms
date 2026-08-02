@@ -177,6 +177,8 @@ def exportar_ical():
     ]
     for r in res.data:
         uid = r.get("uid") or f"{r['check_in']}-{r['check_out']}@suitevila"
+        if uid == "bloqueio-vendas":
+            continue
         ci  = r["check_in"].replace("-", "")
         co  = r["check_out"].replace("-", "")
         hospede = r.get("hospede") or "Reservado"
