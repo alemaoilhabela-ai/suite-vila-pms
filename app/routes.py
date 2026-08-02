@@ -199,6 +199,33 @@ def exportar_ical():
 @bp.post("/api/webhook/telegram")
 def webhook_telegram():
     data = request.json or {}
+
+    # callback_query = clique em botão inline
+    callback = data.get("callback_query")
+    if callback:
+        cdata = callback.get("data", "")
+        token = __import__("os").environ["TELEGRAM_BOT_TOKEN"]
+        # responde ao Telegram para remover o "loading" do botão
+        __import__("requests").post(
+            f"https://api.telegram.org/bot{token}/answerCallbackQuery",
+            json={"callback_query_id": callback["id"]},
+            timeout=5
+        )
+        if cdata.startswith("BLOQUEIO:"):
+            uid_prefix = cdata[9:]
+            ok, msg_resp = processar_bloqueio_telegram(uid_prefix)
+        elif cdata.startswith("DADOS:"):
+            from app.telegram import enviar_mensagem
+            uid_prefix = cdata[6:]
+            enviar_mensagem(f"✏️ Para informar os dados responda:\n`RESERVA {uid_prefix} | Nome | Valor | Obs`")
+            return jsonify({"ok": True})
+        else:
+            return jsonify({"ok": True})
+        from app.telegram import enviar_mensagem
+        enviar_mensagem(msg_resp)
+        return jsonify({"ok": ok})
+
+    # mensagem de texto normal
     msg = data.get("message") or data.get("channel_post") or {}
     texto = msg.get("text", "").strip()
     if not texto:
@@ -210,4 +237,6 @@ def webhook_telegram():
         ok, msg_resp = processar_resposta_whatsapp(texto)
     else:
         return jsonify({"ok": True})
-    return jsonify({"ok": ok, "msg": msg_resp})
+    from app.telegram import enviar_mensagem
+    enviar_mensagem(msg_resp)
+    return jsonify({"ok": ok})
