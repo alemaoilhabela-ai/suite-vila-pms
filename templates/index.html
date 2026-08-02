@@ -803,7 +803,7 @@ async function deletarReserva(id){
 
 async function rodarAgente(){
   const btn=event.target; btn.textContent='⏳...'; btn.disabled=true;
-  try{ const r=await fetch('/api/agent/run',{method:'POST'}); const d=await r.json(); alert(d.msg||'Concluído'); carregarReservas(true); }
+  try{ const r=await fetch('/api/agent/run',{method:'POST'}); const d=await r.json(); alert(d.msg||'Concluído'); carregarReservas(true); location.reload(); }
   finally{ btn.textContent='🔄 Verificar iCal'; btn.disabled=false; }
 }
 
