@@ -162,3 +162,19 @@ def webhook_whatsapp():
         ok, msg = processar_resposta_whatsapp(texto)
         return jsonify({"ok": ok, "msg": msg})
     return jsonify({"ok": False, "msg": "Mensagem ignorada"})
+
+@bp.post("/api/webhook/telegram")
+def webhook_telegram():
+    data = request.json or {}
+    msg = data.get("message") or data.get("channel_post") or {}
+    texto = msg.get("text", "").strip()
+    if not texto:
+        return jsonify({"ok": True})
+    if texto.upper().startswith("BLOQUEIO "):
+        uid_prefix = texto[9:].strip()
+        ok, msg_resp = processar_bloqueio_telegram(uid_prefix)
+    elif texto.upper().startswith("RESERVA "):
+        ok, msg_resp = processar_resposta_whatsapp(texto)
+    else:
+        return jsonify({"ok": True})
+    return jsonify({"ok": ok, "msg": msg_resp})
