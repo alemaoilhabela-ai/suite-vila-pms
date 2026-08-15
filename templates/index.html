@@ -729,7 +729,8 @@ async function salvarPendente(id) {
   const valor=parseFloat(document.getElementById(`pv-${id}`).value);
   const obs=document.getElementById(`po-${id}`).value.trim();
   if(!hospede||!valor) return alert('Preencha nome e valor!');
-  await fetch(`/api/reservas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hospede,valor_total:valor,observacoes:obs,aguardando_detalhes:false,status_financeiro:'Não Paga'})});
+  const r=await fetch(`/api/reservas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hospede,valor_total:valor,observacoes:obs,aguardando_detalhes:false,status_financeiro:'Não Paga'})});
+  if(!r.ok){ alert('Erro ao salvar. Tente novamente.'); return; }
   document.getElementById(`pitem-${id}`).remove();
   carregarReservas();
 }
@@ -806,7 +807,8 @@ async function salvarReserva(){
   if(!payload.check_in||!payload.check_out) return alert('Preencha check-in e check-out');
   const url=editandoId?`/api/reservas/${editandoId}`:'/api/reservas';
   const method=editandoId?'PUT':'POST';
-  await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok){ alert('Erro ao salvar a reserva. Verifique os dados e tente novamente.'); return; }
   fecharModal();
   carregarReservas(true);
 }
