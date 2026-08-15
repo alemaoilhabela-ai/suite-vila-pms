@@ -68,6 +68,7 @@ table.res tr:hover td { background: #f7fafc; }
 .b-paga     { background: #c6f6d5; color: #22543d; }
 .b-naopaga  { background: #fed7d7; color: #9b2c2c; }
 .b-parcial  { background: #fefcbf; color: #7b341e; }
+.b-chegada  { background: #fef9c3; color: #854d0e; }
 .b-conf     { background: #c6f6d5; color: #22543d; }
 .b-checkin  { background: #bee3f8; color: #2b6cb0; }
 .b-checkout { background: #e2e8f0; color: #4a5568; }
@@ -107,7 +108,7 @@ table.res tr:hover td { background: #f7fafc; }
 #cal-floating-tip.pinned { pointer-events: auto; }
 #cal-floating-tip strong { display: block; font-size: 0.75rem; margin-bottom: 2px; }
 #cal-floating-tip::before { content:''; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-bottom-color:#1a202c; }
-.cal-tip-editar { display: block; margin-top: 6px; padding: 3px 10px; background: #3182ce; border-radius: 5px; text-align: center; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: white; }
+.cal-tip-editar { display: inline-block; margin-top: 6px; margin-right: 4px; padding: 3px 10px; background: #3182ce; border-radius: 5px; text-align: center; font-size: 0.68rem; font-weight: 700; cursor: pointer; color: white; }
 .cal-tip-editar:hover { background: #2b6cb0; }
 
 /* Cores barras */
@@ -120,9 +121,11 @@ table.res tr:hover td { background: #f7fafc; }
 .cal-barra.paga       { background: linear-gradient(90deg,#276749,#38a169); }
 .cal-barra.naopaga    { background: linear-gradient(90deg,#9b2c2c,#e53e3e); }
 .cal-barra.parcial    { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+.cal-barra.chegada    { background: linear-gradient(90deg,#d69e2e,#f6e05e); }
 .cal-barra.bord-paga    { outline: 1px solid #38a169; outline-offset: -1px; }
 .cal-barra.bord-naopaga { outline: 1px solid #e53e3e; outline-offset: -1px; }
 .cal-barra.bord-parcial { outline: 1px solid #d69e2e; outline-offset: -1px; }
+.cal-barra.bord-chegada { outline: 1px solid #f6e05e; outline-offset: -1px; }
 
 /* Relatório */
 .rel-table { width: 100%; border-collapse: collapse; font-size: 0.81rem; }
@@ -250,6 +253,7 @@ table.res tr:hover td { background: #f7fafc; }
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#cbd5e0"></div>Check out</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#38a169"></div>Paga (futuro)</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#e53e3e"></div>Não Paga (futuro)</div>
+          <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f6e05e"></div>Pagamento na Chegada</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#2d3748"></div>Bloqueado</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#c05621"></div>Manutenção</div>
           <div class="cal-legenda-item"><div class="cal-legenda-cor" style="background:#f0f4f8;border:1px solid #e2e8f0"></div>Livre</div>
@@ -275,7 +279,7 @@ table.res tr:hover td { background: #f7fafc; }
           </select>
           <select id="filtro-fin" onchange="filtrarTabela()">
             <option value="">Financeiro</option>
-            <option>Paga</option><option>Não Paga</option><option>Parcial</option>
+            <option>Paga</option><option>Não Paga</option><option>Parcial</option><option>Pagamento na Chegada</option>
           </select>
           <button class="btn btn-success" onclick="abrirModal()">+ Nova Reserva</button>
           <button class="btn btn-primary" onclick="rodarAgente()">🔄 Verificar iCal</button>
@@ -429,7 +433,7 @@ table.res tr:hover td { background: #f7fafc; }
         </select>
       </div>
       <div class="form-group"><label>Status Financeiro</label>
-        <select id="f-fin"><option>Não Paga</option><option>Paga</option><option>Parcial</option></select>
+        <select id="f-fin"><option>Não Paga</option><option>Paga</option><option>Parcial</option><option>Pagamento na Chegada</option></select>
       </div>
     </div>
     <div class="form-group"><label>Status</label>
@@ -441,7 +445,8 @@ table.res tr:hover td { background: #f7fafc; }
     </div>
     <div class="form-group"><label>Observações</label><textarea id="f-obs" rows="2" style="resize:vertical"></textarea></div>
     <div class="modal-footer">
-      <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-danger" id="btn-cancelar-reserva" style="display:none;margin-right:auto" onclick="cancelarReservaModal()">🗑 Cancelar Reserva</button>
+      <button class="btn btn-gray" onclick="fecharModal()">Fechar</button>
       <button class="btn btn-primary" onclick="salvarReserva()">Salvar</button>
     </div>
   </div>
@@ -652,7 +657,7 @@ function renderTabela(dados) {
       <td>${r.adr?'R$ '+Number(r.adr).toFixed(0):'—'}</td>
       <td><span class="badge b-${(r.canal||'').toLowerCase().replace(' ','')}">${r.canal||'—'}</span></td>
       <td><span class="badge ${statusClass(r.status)}">${r.status||'—'}</span></td>
-      <td><span class="badge ${r.status_financeiro==='Paga'?'b-paga':r.status_financeiro==='Parcial'?'b-parcial':'b-naopaga'}">${r.status_financeiro||'Não Paga'}</span></td>
+      <td><span class="badge ${r.status_financeiro==='Paga'?'b-paga':r.status_financeiro==='Parcial'?'b-parcial':r.status_financeiro==='Pagamento na Chegada'?'b-chegada':'b-naopaga'}">${r.status_financeiro||'Não Paga'}</span></td>
       <td style="white-space:nowrap">
         <button class="btn-icon" onclick="editarReserva(${r.id})">✏️</button>
         <button class="btn-icon btn-del" onclick="deletarReserva(${r.id})">✕</button>
@@ -758,12 +763,22 @@ function abrirModal(dados) {
   document.getElementById('f-status').value=dados?.status||'Reserva Confirmada';
   document.getElementById('f-fin').value=dados?.status_financeiro||'Não Paga';
   document.getElementById('f-obs').value=dados?.observacoes||'';
+  document.getElementById('btn-cancelar-reserva').style.display=editandoId?'':'none';
   document.getElementById('modal').classList.add('open');
 }
 
 function fecharModal(){ document.getElementById('modal').classList.remove('open'); }
 
 function editarReserva(id){ const r=reservasCache.find(x=>x.id===id); if(r) abrirModal(r); }
+
+async function cancelarReservaModal(){
+  if(!editandoId) return;
+  const hospede=document.getElementById('f-hospede').value||'esta reserva';
+  if(!confirm(`Tem certeza que deseja cancelar ${hospede}? Essa ação não pode ser desfeita.`)) return;
+  await fetch(`/api/reservas/${editandoId}`,{method:'DELETE'});
+  fecharModal();
+  carregarReservas(true);
+}
 
 function onCanalChange(val){
   const isBloq=val==='Bloqueio'||val==='Manutenção';
@@ -816,7 +831,7 @@ function getCorBarra(r) {
   if(r.canal==='Manutenção'||status==='Manutenção') return {fill:'manutencao',bord:null};
   const hoje=new Date(); hoje.setHours(0,0,0,0);
   const ci=new Date(r.check_in+'T00:00:00');
-  const finClass=fin==='Paga'?'paga':fin==='Parcial'||status.includes('Parcial')?'parcial':'naopaga';
+  const finClass=fin==='Paga'?'paga':fin==='Pagamento na Chegada'?'chegada':(fin==='Parcial'||status.includes('Parcial'))?'parcial':'naopaga';
   const bordClass='bord-'+finClass;
   if(ci>=hoje) return {fill:finClass,bord:null};
   let fillClass='confirmada';
@@ -959,7 +974,7 @@ function renderJanela() {
     span.className = 'cal-barra-label';
     span.textContent = label;
 
-    const tipHtml = `<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
+    const tipHtml = `<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${_tipAcoes(r)}`;
 
     barra.addEventListener('mouseenter', () => _showTip(barra, tipHtml, r.id));
     barra.addEventListener('mouseleave', _hideTip);
@@ -1065,7 +1080,7 @@ function renderCalendario() {
       const span=document.createElement('span');
       span.className='cal-barra-label';
       span.textContent=label;
-      const tipHtml=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${r.id?`<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`:''}`;
+      const tipHtml=`<strong>${esc(label||r.canal)}</strong>${fmt(r.check_in)} → ${fmt(r.check_out)}<br>${r.diarias||'?'} diárias${r.valor_total?' · R$ '+Number(r.valor_total).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}${_tipAcoes(r)}`;
       barra.addEventListener('mouseenter', () => _showTip(barra, tipHtml, r.id));
       barra.addEventListener('mouseleave', _hideTip);
       barra.addEventListener('click', e => { e.stopPropagation(); _pinTip(barra, tipHtml, r.id); });
@@ -1324,6 +1339,30 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{
 });
 
 iniciarSessao();
+
+// ─── Ações rápidas do tooltip (Editar / Check-in / Check-out) ─
+function _tipAcoes(r) {
+  if(!r.id) return '';
+  let html = `<span class="cal-tip-editar" onclick="event.stopPropagation();editarReserva(${r.id})">✏️ Editar</span>`;
+  const bloqueado = r.canal==='Bloqueio' || r.canal==='Manutenção' || r.status==='Bloqueado' || r.status==='Manutenção' || r.status==='No Show';
+  if(!bloqueado) {
+    if(r.status==='Check in') {
+      html += `<span class="cal-tip-editar" style="background:#718096" onclick="event.stopPropagation();toggleCheckin(${r.id})">🏁 Check out</span>`;
+    } else {
+      html += `<span class="cal-tip-editar" style="background:#276749" onclick="event.stopPropagation();toggleCheckin(${r.id})">✅ Check in</span>`;
+    }
+  }
+  return html;
+}
+
+async function toggleCheckin(id) {
+  const r = reservasCache.find(x=>x.id===id);
+  if(!r) return;
+  const novoStatus = r.status==='Check in' ? 'Check out' : 'Check in';
+  await fetch(`/api/reservas/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:novoStatus})});
+  _unpinTip();
+  carregarReservas(true);
+}
 
 // ─── Tooltip flutuante global ────────────────────────────────
 const _tip = document.getElementById('cal-floating-tip');
